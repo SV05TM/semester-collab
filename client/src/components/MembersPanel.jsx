@@ -89,12 +89,12 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
   return (
     <div>
       {/* Group tabs */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-1 bg-white rounded-lg p-1 shadow-sm border flex-wrap">
+      <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
+        <div className="flex gap-1 bg-white rounded-xl p-1.5 shadow-sm border border-gray-100 flex-wrap">
           <button
             onClick={() => setViewMode('all')}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-              viewMode === 'all' ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+            className={`px-3.5 py-2 rounded-lg text-sm font-medium transition ${
+              viewMode === 'all' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25' : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
             All ({members.length})
@@ -103,8 +103,8 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
             <button
               key={g.id}
               onClick={() => setViewMode(g.id)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-                viewMode === g.id ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+              className={`px-3.5 py-2 rounded-lg text-sm font-medium transition ${
+                viewMode === g.id ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25' : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
               {g.name} ({members.filter(m => m.group === g.id).length})
@@ -112,8 +112,8 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
           ))}
           <button
             onClick={() => setViewMode('ungrouped')}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-              viewMode === 'ungrouped' ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+            className={`px-3.5 py-2 rounded-lg text-sm font-medium transition ${
+              viewMode === 'ungrouped' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25' : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
             Ungrouped ({members.filter(m => !m.group).length})
@@ -122,13 +122,13 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
         <div className="flex gap-2">
           <button
             onClick={() => setShowCreateGroup(true)}
-            className="bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-700 text-sm"
+            className="bg-purple-50 text-purple-700 border border-purple-200 px-4 py-2 rounded-xl hover:bg-purple-100 text-sm font-medium transition"
           >
             + Group
           </button>
           <button
             onClick={() => setShowInvite(true)}
-            className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 text-sm"
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:from-indigo-700 hover:to-purple-700 text-sm font-medium shadow-lg shadow-indigo-500/25 transition"
           >
             + Add People
           </button>
@@ -137,29 +137,29 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
 
       {/* Create group modal */}
       {showCreateGroup && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm">
-            <h3 className="text-lg font-semibold mb-4">Create Group</h3>
+        <div className="fixed inset-0 glass-overlay flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-gray-100">
+            <h3 className="text-lg font-bold mb-4">Create Group</h3>
             <input
               type="text"
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
               placeholder="e.g. Marketing Team, Logistics Crew..."
-              className="w-full px-3 py-2 border rounded-lg mb-4"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 focus:bg-white"
               onKeyDown={(e) => e.key === 'Enter' && createGroup()}
               autoFocus
               aria-label="Group name"
             />
-            <div className="flex gap-2 justify-end">
-              <button onClick={() => setShowCreateGroup(false)} className="px-4 py-2 text-gray-600">Cancel</button>
-              <button onClick={createGroup} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Create</button>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setShowCreateGroup(false)} className="px-5 py-2.5 text-gray-600 font-medium">Cancel</button>
+              <button onClick={createGroup} className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:from-purple-700 hover:to-indigo-700 font-medium shadow-lg shadow-purple-500/25 transition">Create</button>
             </div>
           </div>
         </div>
       )}
 
       {/* Members list */}
-      <div className="bg-white rounded-xl p-4 shadow-sm border mb-4">
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold">
             {viewMode === 'all' ? 'All Members' : viewMode === 'ungrouped' ? 'Ungrouped Members' : groups.find(g => g.id === viewMode)?.name || 'Group'}
@@ -179,7 +179,7 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
           {displayedMembers.map(m => (
             <div key={m.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-sm font-medium">
+                <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
                   {m.username[0].toUpperCase()}
                 </div>
                 <div>
@@ -244,7 +244,7 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
       </div>
 
       {/* Ping group/all */}
-      <div className="bg-white rounded-xl p-4 shadow-sm border mb-4">
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
         <h3 className="font-semibold mb-2 text-sm">
           📢 Ping {viewMode === 'all' ? 'Everyone' : viewMode === 'ungrouped' ? 'Ungrouped' : groups.find(g => g.id === viewMode)?.name || 'Group'}
         </h3>
@@ -266,7 +266,7 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
       </div>
 
       {/* All registered users list */}
-      <div className="bg-white rounded-xl p-4 shadow-sm border">
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
         <h3 className="font-semibold mb-3 text-sm">All Registered Users ({allUsers.length})</h3>
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {allUsers.map(u => {
@@ -302,8 +302,8 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
 
       {/* Invite modal */}
       {showInvite && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+        <div className="fixed inset-0 glass-overlay flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Add People to Event</h3>
               <button onClick={() => setShowInvite(false)} className="text-gray-500 hover:text-gray-700">✕</button>

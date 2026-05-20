@@ -19,6 +19,9 @@ const io = new Server(server, {
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
+// Make io accessible in routes
+app.set('io', io);
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);

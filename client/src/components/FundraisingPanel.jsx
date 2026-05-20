@@ -108,19 +108,19 @@ export default function FundraisingPanel({ eventId, user }) {
     <div>
       {/* Summary */}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4">
           <p className="text-sm text-green-600 font-medium">Total Revenue</p>
           <p className="text-2xl font-bold text-green-700">${totalRevenue.toFixed(2)}</p>
         </div>
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+        <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-200 rounded-2xl p-4">
           <p className="text-sm text-red-600 font-medium">Total Expenses</p>
           <p className="text-2xl font-bold text-red-700">${totalExpense.toFixed(2)}</p>
         </div>
-        <div className={`border rounded-xl p-4 ${netProfit >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'}`}>
+        <div className={`border rounded-2xl p-4 ${netProfit >= 0 ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200' : 'bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200'}`}>
           <p className="text-sm font-medium text-gray-600">Net Profit</p>
           <p className={`text-2xl font-bold ${netProfit >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>${netProfit.toFixed(2)}</p>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl p-4">
           <p className="text-sm text-indigo-600 font-medium">Confirmed</p>
           <p className="text-2xl font-bold text-indigo-700">${confirmedRevenue.toFixed(2)}</p>
         </div>

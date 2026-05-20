@@ -151,7 +151,7 @@ export default function BudgetPanel({ eventId, user, eventInfo }) {
   return (
     <div>
       {/* Summary */}
-      <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6">
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl p-5 mb-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-indigo-600 font-medium">Total Amount Requested</p>

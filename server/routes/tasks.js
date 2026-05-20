@@ -75,7 +75,15 @@ router.post('/', async (req, res) => {
       category_name = cat?.name || null;
     }
 
-    res.status(201).json({ id: task._id, ...task, assigned_username, category_name });
+    const enrichedTask = { id: task._id, ...task, assigned_username, category_name };
+
+    // Emit real-time event to all users in this event room
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`event-${event_id}`).emit('task-created', enrichedTask);
+    }
+
+    res.status(201).json(enrichedTask);
   } catch (err) {
     res.status(500).json({ error: 'Failed to create task' });
   }
@@ -122,7 +130,15 @@ router.put('/:id', async (req, res) => {
       category_name = cat?.name || null;
     }
 
-    res.json({ id: task._id, ...task, assigned_username, category_name });
+    const enrichedTask = { id: task._id, ...task, assigned_username, category_name };
+
+    // Emit real-time event to all users in this event room
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`event-${task.event_id}`).emit('task-updated', enrichedTask);
+    }
+
+    res.json(enrichedTask);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update task' });
   }
@@ -130,7 +146,15 @@ router.put('/:id', async (req, res) => {
 
 // Delete task
 router.delete('/:id', async (req, res) => {
+  const task = await db.tasks.findOne({ _id: req.params.id });
   await db.tasks.remove({ _id: req.params.id });
+
+  // Emit real-time event to all users in this event room
+  const io = req.app.get('io');
+  if (io && task) {
+    io.to(`event-${task.event_id}`).emit('task-deleted', { id: req.params.id, event_id: task.event_id });
+  }
+
   res.json({ success: true });
 });
 
