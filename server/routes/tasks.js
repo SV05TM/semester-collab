@@ -1,0 +1,137 @@
+import { Router } from 'express';
+import db from '../db.js';
+import { authenticateToken } from '../middleware/auth.js';
+
+const router = Router();
+router.use(authenticateToken);
+
+// Get tasks for an event
+router.get('/event/:eventId', async (req, res) => {
+  try {
+    const tasks = await db.tasks.find({ event_id: req.params.eventId }).sort({ deadline: 1 });
+
+    const enriched = [];
+    for (const task of tasks) {
+      let assigned_username = null;
+      let category_name = null;
+
+      if (task.assigned_to) {
+        const user = await db.users.findOne({ _id: task.assigned_to });
+        assigned_username = user?.username || null;
+      }
+      if (task.category_id) {
+        const cat = await db.categories.findOne({ _id: task.category_id });
+        category_name = cat?.name || null;
+      }
+
+      enriched.push({ id: task._id, ...task, assigned_username, category_name });
+    }
+
+    res.json(enriched);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load tasks' });
+  }
+});
+
+// Create task
+router.post('/', async (req, res) => {
+  try {
+    const { event_id, category_id, title, description, assigned_to, deadline } = req.body;
+
+    if (!event_id || !title) {
+      return res.status(400).json({ error: 'Event ID and title are required' });
+    }
+
+    const task = await db.tasks.insert({
+      event_id,
+      category_id: category_id || null,
+      title,
+      description: description || '',
+      assigned_to: assigned_to || null,
+      status: 'pending',
+      deadline: deadline || null,
+      created_at: new Date().toISOString()
+    });
+
+    // Notify assigned user
+    if (assigned_to) {
+      await db.notifications.insert({
+        user_id: assigned_to,
+        event_id,
+        message: `You've been assigned a new task: "${title}"`,
+        is_read: false,
+        created_at: new Date().toISOString()
+      });
+    }
+
+    let assigned_username = null;
+    let category_name = null;
+    if (task.assigned_to) {
+      const user = await db.users.findOne({ _id: task.assigned_to });
+      assigned_username = user?.username || null;
+    }
+    if (task.category_id) {
+      const cat = await db.categories.findOne({ _id: task.category_id });
+      category_name = cat?.name || null;
+    }
+
+    res.status(201).json({ id: task._id, ...task, assigned_username, category_name });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create task' });
+  }
+});
+
+// Update task
+router.put('/:id', async (req, res) => {
+  try {
+    const { title, description, assigned_to, status, deadline, category_id } = req.body;
+
+    const existing = await db.tasks.findOne({ _id: req.params.id });
+    if (!existing) return res.status(404).json({ error: 'Task not found' });
+
+    const updates = {};
+    if (title !== undefined) updates.title = title;
+    if (description !== undefined) updates.description = description;
+    if (assigned_to !== undefined) updates.assigned_to = assigned_to;
+    if (status !== undefined) updates.status = status;
+    if (deadline !== undefined) updates.deadline = deadline;
+    if (category_id !== undefined) updates.category_id = category_id;
+
+    await db.tasks.update({ _id: req.params.id }, { $set: updates });
+
+    // Notify if reassigned
+    if (assigned_to && assigned_to !== existing.assigned_to) {
+      await db.notifications.insert({
+        user_id: assigned_to,
+        event_id: existing.event_id,
+        message: `You've been assigned task: "${title || existing.title}"`,
+        is_read: false,
+        created_at: new Date().toISOString()
+      });
+    }
+
+    const task = await db.tasks.findOne({ _id: req.params.id });
+    let assigned_username = null;
+    let category_name = null;
+    if (task.assigned_to) {
+      const user = await db.users.findOne({ _id: task.assigned_to });
+      assigned_username = user?.username || null;
+    }
+    if (task.category_id) {
+      const cat = await db.categories.findOne({ _id: task.category_id });
+      category_name = cat?.name || null;
+    }
+
+    res.json({ id: task._id, ...task, assigned_username, category_name });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update task' });
+  }
+});
+
+// Delete task
+router.delete('/:id', async (req, res) => {
+  await db.tasks.remove({ _id: req.params.id });
+  res.json({ success: true });
+});
+
+export default router;
