@@ -3,7 +3,7 @@ services:
     name: semester-collab
     runtime: node
     plan: free
-    buildCommand: npm install --prefix server && npm install --prefix client && npm run build --prefix client
+    buildCommand: npm install --prefix server && cd client && npm install --include=dev && npx vite build
     startCommand: node server/index.js
     envVars:
       - key: NODE_ENV
