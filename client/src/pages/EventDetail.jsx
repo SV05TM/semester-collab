@@ -14,6 +14,18 @@ export default function EventDetail({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('tasks');
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportWord = async () => {
+    setExporting(true);
+    try {
+      const { exportEventToWord } = await import('../exportEventDoc');
+      await exportEventToWord(id, event);
+    } catch (err) {
+      console.error('Export failed', err);
+    }
+    setExporting(false);
+  };
 
   useEffect(() => {
     loadEvent();
@@ -152,17 +164,26 @@ export default function EventDetail({ user, onLogout }) {
                 )}
               </div>
             </div>
-            <div className="flex -space-x-2">
-              {event.members?.slice(0, 5).map(m => (
-                <div key={m.id} className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-medium border-2 border-white" title={m.username}>
-                  {m.username[0].toUpperCase()}
-                </div>
-              ))}
-              {event.members?.length > 5 && (
-                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-xs font-medium border-2 border-white">
-                  +{event.members.length - 5}
-                </div>
-              )}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleExportWord}
+                disabled={exporting}
+                className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-100 transition disabled:opacity-50"
+              >
+                {exporting ? '⏳ Exporting...' : '📄 Export Word'}
+              </button>
+              <div className="flex -space-x-2">
+                {event.members?.slice(0, 5).map(m => (
+                  <div key={m.id} className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-medium border-2 border-white" title={m.username}>
+                    {m.username[0].toUpperCase()}
+                  </div>
+                ))}
+                {event.members?.length > 5 && (
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-xs font-medium border-2 border-white">
+                    +{event.members.length - 5}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
