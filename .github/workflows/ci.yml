@@ -7,8 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  # Build and verify the server
-  server:
+  server-tests:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -27,11 +26,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check for syntax errors
-        run: node --check index.js
+      - name: Run tests
+        run: npm test
 
-  # Build and verify the client
-  client:
+  client-tests:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -50,56 +48,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run tests
+        run: npm test
+
       - name: Build
         run: npm run build
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: client-dist
-          path: client/dist
-
-  # Deploy (runs only on push to main, after both jobs pass)
-  deploy:
-    needs: [server, client]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: client-dist
-          path: client/dist
-
-      # -------------------------------------------------------
-      # UNCOMMENT ONE OF THESE DEPLOY OPTIONS WHEN READY:
-      # -------------------------------------------------------
-
-      # OPTION 1: Deploy to Railway
-      # - name: Deploy to Railway
-      #   uses: bervProject/railway-deploy@main
-      #   with:
-      #     railway_token: ${{ secrets.RAILWAY_TOKEN }}
-      #     service: semester-collab
-
-      # OPTION 2: Deploy to Render (auto-deploys from GitHub, no action needed)
-
-      # OPTION 3: Deploy to a VPS via SSH
-      # - name: Deploy to VPS
-      #   uses: appleboy/ssh-action@v1
-      #   with:
-      #     host: ${{ secrets.VPS_HOST }}
-      #     username: ${{ secrets.VPS_USER }}
-      #     key: ${{ secrets.VPS_SSH_KEY }}
-      #     script: |
-      #       cd /app/semester-collab
-      #       git pull origin main
-      #       cd server && npm ci
-      #       cd ../client && npm ci && npm run build
-      #       pm2 restart semester-collab
-
-      - name: Pipeline complete
-        run: echo "✅ Build passed and ready to deploy"

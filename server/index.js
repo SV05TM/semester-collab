@@ -1,23 +1,15 @@
-import express from 'express';
-import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import app from './app.js';
 import db from './db.js';
-import authRoutes from './routes/auth.js';
-import eventRoutes from './routes/events.js';
-import taskRoutes from './routes/tasks.js';
-import financeRoutes from './routes/finances.js';
-import messageRoutes from './routes/messages.js';
-import notificationRoutes from './routes/notifications.js';
-import pushRoutes, { sendPushToUser } from './routes/push.js';
+import { sendPushToUser } from './routes/push.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
-const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
@@ -26,26 +18,12 @@ const io = new Server(server, {
   }
 });
 
-app.use(cors({
-  origin: isProduction ? true : CLIENT_URL
-}));
-app.use(express.json());
-
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/finances', financeRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/push', pushRoutes);
-
 // In production, serve the built client files
 if (isProduction) {
   const clientDist = path.join(__dirname, '..', 'client', 'dist');
-  app.use(express.static(clientDist));
+  const express = await import('express');
+  app.use(express.default.static(clientDist));
 
-  // All non-API routes serve the React app (for client-side routing)
   app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
       res.sendFile(path.join(clientDist, 'index.html'));
