@@ -7,7 +7,7 @@ export default function NotificationBell({ user }) {
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
-  const { permission, subscribed, subscribe, unsubscribe } = usePushNotifications(user);
+  const { permission, subscribed, supported, subscribe, unsubscribe } = usePushNotifications(user);
 
   useEffect(() => {
     loadNotifications();
@@ -73,20 +73,22 @@ export default function NotificationBell({ user }) {
           </div>
 
           {/* Push notification toggle */}
-          <div className="px-3 py-2 border-b bg-gray-50 flex items-center justify-between">
-            <span className="text-xs text-gray-600">
-              📱 Mobile notifications
-            </span>
-            {subscribed ? (
-              <button onClick={unsubscribe} className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300">
-                ✓ Enabled
-              </button>
-            ) : (
-              <button onClick={subscribe} className="text-xs bg-indigo-600 text-white px-2 py-1 rounded hover:bg-indigo-700">
-                Enable
-              </button>
-            )}
-          </div>
+          {supported && (
+            <div className="px-3 py-2 border-b bg-gray-50 flex items-center justify-between">
+              <span className="text-xs text-gray-600">
+                📱 Mobile notifications
+              </span>
+              {subscribed ? (
+                <button onClick={unsubscribe} className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300">
+                  ✓ Enabled
+                </button>
+              ) : (
+                <button onClick={subscribe} className="text-xs bg-indigo-600 text-white px-2 py-1 rounded hover:bg-indigo-700">
+                  Enable
+                </button>
+              )}
+            </div>
+          )}
 
           <div className="overflow-y-auto max-h-72">
             {notifications.length === 0 ? (

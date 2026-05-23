@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react';
 import api from './api';
 
 export default function usePushNotifications(user) {
-  const [permission, setPermission] = useState(Notification.permission);
+  const [permission, setPermission] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'default'
+  );
   const [subscribed, setSubscribed] = useState(false);
+  const supported = typeof Notification !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !supported) return;
     checkSubscription();
   }, [user]);
 
@@ -19,7 +22,7 @@ export default function usePushNotifications(user) {
   };
 
   const subscribe = async () => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!supported) {
       alert('Push notifications are not supported in this browser');
       return;
     }
@@ -63,7 +66,7 @@ export default function usePushNotifications(user) {
     }
   };
 
-  return { permission, subscribed, subscribe, unsubscribe };
+  return { permission, subscribed, supported, subscribe, unsubscribe };
 }
 
 // Helper to convert VAPID key
