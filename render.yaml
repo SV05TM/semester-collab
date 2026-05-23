@@ -1,0 +1,17 @@
+# Render Blueprint - deploys the full app as a single web service
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: semester-collab
+    runtime: node
+    plan: free
+    buildCommand: npm run install:all && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 10000

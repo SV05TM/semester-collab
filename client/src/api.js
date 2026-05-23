@@ -1,8 +1,10 @@
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: 'http://localhost:3001/api',
-});
+// In production, API is on the same origin. In dev, it's localhost:3001
+const baseURL = import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? '/api' : 'http://localhost:3001/api');
+
+const api = axios.create({ baseURL });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');

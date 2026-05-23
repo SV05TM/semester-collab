@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import db from './db.js';
@@ -10,25 +12,44 @@ import financeRoutes from './routes/finances.js';
 import messageRoutes from './routes/messages.js';
 import notificationRoutes from './routes/notifications.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const isProduction = process.env.NODE_ENV === 'production';
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
-  cors: { origin: 'http://localhost:5173', methods: ['GET', 'POST'] }
+  cors: {
+    origin: isProduction ? true : CLIENT_URL,
+    methods: ['GET', 'POST']
+  }
 });
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({
+  origin: isProduction ? true : CLIENT_URL
+}));
 app.use(express.json());
 
-// Make io accessible in routes
-app.set('io', io);
-
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/finances', financeRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/notifications', notificationRoutes);
+
+// In production, serve the built client files
+if (isProduction) {
+  const clientDist = path.join(__dirname, '..', 'client', 'dist');
+  app.use(express.static(clientDist));
+
+  // All non-API routes serve the React app (for client-side routing)
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(clientDist, 'index.html'));
+    }
+  });
+}
 
 // Socket.IO for real-time communication
 const onlineUsers = new Map();
@@ -80,7 +101,6 @@ io.on('connection', (socket) => {
       created_at: new Date().toISOString()
     });
 
-    // Send real-time if user is online
     const targetSocket = onlineUsers.get(user_id.toString());
     if (targetSocket) {
       io.to(targetSocket).emit('notification', { event_id, message });
@@ -130,5 +150,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT} (${isProduction ? 'production' : 'development'})`);
 });
