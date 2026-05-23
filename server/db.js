@@ -15,6 +15,7 @@ const db = {
   messages: Datastore.create({ filename: path.join(dataDir, 'messages.db'), autoload: true }),
   notifications: Datastore.create({ filename: path.join(dataDir, 'notifications.db'), autoload: true }),
   groups: Datastore.create({ filename: path.join(dataDir, 'groups.db'), autoload: true }),
+  pushSubscriptions: Datastore.create({ filename: path.join(dataDir, 'push_subscriptions.db'), autoload: true }),
 };
 
 // Ensure unique indexes

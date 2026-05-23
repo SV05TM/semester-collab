@@ -11,6 +11,7 @@ import taskRoutes from './routes/tasks.js';
 import financeRoutes from './routes/finances.js';
 import messageRoutes from './routes/messages.js';
 import notificationRoutes from './routes/notifications.js';
+import pushRoutes, { sendPushToUser } from './routes/push.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
@@ -37,6 +38,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/finances', financeRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/push', pushRoutes);
 
 // In production, serve the built client files
 if (isProduction) {
@@ -105,6 +107,13 @@ io.on('connection', (socket) => {
     if (targetSocket) {
       io.to(targetSocket).emit('notification', { event_id, message });
     }
+
+    // Send push notification (works even when app is closed)
+    sendPushToUser(user_id, {
+      title: 'Semester Collab',
+      body: message,
+      url: event_id ? `/event/${event_id}` : '/'
+    });
   });
 
   socket.on('deadline-reminder', async (data) => {
