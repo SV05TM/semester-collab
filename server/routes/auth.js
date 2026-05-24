@@ -13,6 +13,11 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
+    // Require GMU email
+    if (!email.endsWith('@gmu.edu') && !email.endsWith('@masonlive.gmu.edu')) {
+      return res.status(400).json({ error: 'Please use your GMU email address (@gmu.edu or @masonlive.gmu.edu)' });
+    }
+
     const existing = await db.users.findOne({ $or: [{ username }, { email }] });
     if (existing) {
       return res.status(409).json({ error: 'Username or email already exists' });

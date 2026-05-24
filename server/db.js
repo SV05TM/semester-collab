@@ -60,6 +60,7 @@ const taskSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   assigned_to: String,
   status: { type: String, default: 'pending' },
+  priority: { type: String, default: 'medium' },
   deadline: String,
   created_at: { type: String, default: () => new Date().toISOString() }
 });

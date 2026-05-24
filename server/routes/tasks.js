@@ -43,7 +43,7 @@ router.post('/', async (req, res) => {
     const task = await db.tasks.create({
       event_id, category_id: category_id || null, title,
       description: description || '', assigned_to: assigned_to || null,
-      status: 'pending', deadline: deadline || null
+      status: 'pending', priority: req.body.priority || 'medium', deadline: deadline || null
     });
 
     if (assigned_to) {
@@ -82,6 +82,7 @@ router.put('/:id', async (req, res) => {
     if (description !== undefined) updates.description = description;
     if (assigned_to !== undefined) updates.assigned_to = assigned_to;
     if (status !== undefined) updates.status = status;
+    if (req.body.priority !== undefined) updates.priority = req.body.priority;
     if (deadline !== undefined) updates.deadline = deadline;
     if (category_id !== undefined) updates.category_id = category_id;
 
