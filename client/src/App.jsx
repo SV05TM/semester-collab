@@ -4,12 +4,14 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import EventDetail from './pages/EventDetail';
+import OnboardingTutorial from './components/OnboardingTutorial';
 import socket from './socket';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [globalToast, setGlobalToast] = useState(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('user');
@@ -34,11 +36,21 @@ function App() {
     return () => socket.off('notification', handleNotification);
   }, [user]);
 
-  const handleLogin = (userData, token) => {
+  const handleLogin = (userData, token, isNewUser = false) => {
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', token);
     setUser(userData);
     socket.emit('register', userData.id.toString());
+
+    // Show onboarding for new users or if they haven't seen it
+    if (isNewUser || !localStorage.getItem('onboarding_done')) {
+      setShowOnboarding(true);
+    }
+  };
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('onboarding_done', 'true');
+    setShowOnboarding(false);
   };
 
   const handleLogout = () => {
@@ -51,6 +63,9 @@ function App() {
 
   return (
     <>
+      {/* Onboarding tutorial */}
+      {showOnboarding && <OnboardingTutorial onComplete={handleOnboardingComplete} />}
+
       {/* Global toast notification */}
       {globalToast && (
         <div className="fixed top-4 right-4 z-[200] animate-slide-in">
