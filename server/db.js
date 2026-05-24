@@ -3,12 +3,19 @@ import mongoose from 'mongoose';
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/semester-collab';
 
 export async function connectDB() {
-  if (process.env.NODE_ENV === 'test') return; // Tests use in-memory DB
+  if (process.env.NODE_ENV === 'test') return;
+  const uri = process.env.MONGODB_URI;
+  console.log('Attempting MongoDB connection...');
+  console.log('URI exists:', !!uri);
+  console.log('URI starts with:', uri ? uri.substring(0, 20) + '...' : 'undefined');
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB');
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000
+    });
+    console.log('Connected to MongoDB successfully');
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
+    console.error('Full error:', JSON.stringify(err, null, 2));
     process.exit(1);
   }
 }
