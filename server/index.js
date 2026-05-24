@@ -3,8 +3,11 @@ import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import app from './app.js';
-import db from './db.js';
+import db, { connectDB } from './db.js';
 import { sendPushToUser } from './routes/push.js';
+
+// Connect to MongoDB
+await connectDB();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
@@ -53,15 +56,14 @@ io.on('connection', (socket) => {
   socket.on('send-message', async (data) => {
     const { event_id, content, user_id, username } = data;
 
-    const message = await db.messages.insert({
+    const message = await db.messages.create({
       event_id,
       user_id,
-      content,
-      created_at: new Date().toISOString()
+      content
     });
 
     io.to(`event-${event_id}`).emit('new-message', {
-      id: message._id,
+      id: message._id.toString(),
       event_id,
       user_id,
       username,
@@ -73,12 +75,11 @@ io.on('connection', (socket) => {
   socket.on('notify-user', async (data) => {
     const { user_id, event_id, message } = data;
 
-    await db.notifications.insert({
+    await db.notifications.create({
       user_id,
       event_id,
       message,
-      is_read: false,
-      created_at: new Date().toISOString()
+      is_read: false
     });
 
     const targetSocket = onlineUsers.get(user_id.toString());
@@ -101,7 +102,7 @@ io.on('connection', (socket) => {
       event_id,
       status: { $ne: 'completed' },
       deadline: { $ne: null }
-    });
+    }).lean();
 
     const now = new Date();
     const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -111,12 +112,11 @@ io.on('connection', (socket) => {
       if (deadline >= now && deadline <= tomorrow && task.assigned_to) {
         const msg = `Deadline approaching: "${task.title}" is due ${task.deadline}`;
 
-        await db.notifications.insert({
+        await db.notifications.create({
           user_id: task.assigned_to,
           event_id,
           message: msg,
-          is_read: false,
-          created_at: new Date().toISOString()
+          is_read: false
         });
 
         const targetSocket = onlineUsers.get(task.assigned_to.toString());

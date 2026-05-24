@@ -87,7 +87,7 @@ describe('Events API', () => {
 
     it('should return 404 for non-existent event', async () => {
       const res = await request(app)
-        .get('/api/events/nonexistent123')
+        .get('/api/events/000000000000000000000000')
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(404);

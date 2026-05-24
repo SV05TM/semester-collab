@@ -19,15 +19,10 @@ router.post('/register', async (req, res) => {
     }
 
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const user = await db.users.insert({
-      username,
-      email,
-      password: hashedPassword,
-      created_at: new Date().toISOString()
-    });
+    const user = await db.users.create({ username, email, password: hashedPassword });
 
     const token = generateToken(user);
-    res.status(201).json({ user: { id: user._id, username: user.username, email: user.email }, token });
+    res.status(201).json({ user: { id: user._id.toString(), username: user.username, email: user.email }, token });
   } catch (err) {
     res.status(500).json({ error: 'Registration failed' });
   }
@@ -47,21 +42,21 @@ router.post('/login', async (req, res) => {
     }
 
     const token = generateToken(user);
-    res.json({ user: { id: user._id, username: user.username, email: user.email }, token });
+    res.json({ user: { id: user._id.toString(), username: user.username, email: user.email }, token });
   } catch (err) {
     res.status(500).json({ error: 'Login failed' });
   }
 });
 
 router.get('/me', authenticateToken, async (req, res) => {
-  const user = await db.users.findOne({ _id: req.user.id });
+  const user = await db.users.findById(req.user.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json({ user: { id: user._id, username: user.username, email: user.email } });
+  res.json({ user: { id: user._id.toString(), username: user.username, email: user.email } });
 });
 
 router.get('/users', async (req, res) => {
-  const users = await db.users.find({});
-  res.json(users.map(u => ({ id: u._id, username: u.username, email: u.email })));
+  const users = await db.users.find({}).select('-password').lean();
+  res.json(users.map(u => ({ id: u._id.toString(), username: u.username, email: u.email })));
 });
 
 export default router;

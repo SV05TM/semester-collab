@@ -5,10 +5,9 @@ import { authenticateToken } from '../middleware/auth.js';
 const router = Router();
 router.use(authenticateToken);
 
-// Get tasks for an event
 router.get('/event/:eventId', async (req, res) => {
   try {
-    const tasks = await db.tasks.find({ event_id: req.params.eventId }).sort({ deadline: 1 });
+    const tasks = await db.tasks.find({ event_id: req.params.eventId }).sort({ deadline: 1 }).lean();
 
     const enriched = [];
     for (const task of tasks) {
@@ -16,15 +15,15 @@ router.get('/event/:eventId', async (req, res) => {
       let category_name = null;
 
       if (task.assigned_to) {
-        const user = await db.users.findOne({ _id: task.assigned_to });
+        const user = await db.users.findById(task.assigned_to);
         assigned_username = user?.username || null;
       }
       if (task.category_id) {
-        const cat = await db.categories.findOne({ _id: task.category_id });
+        const cat = await db.categories.findById(task.category_id);
         category_name = cat?.name || null;
       }
 
-      enriched.push({ id: task._id, ...task, assigned_username, category_name });
+      enriched.push({ id: task._id.toString(), ...task, assigned_username, category_name });
     }
 
     res.json(enriched);
@@ -33,7 +32,6 @@ router.get('/event/:eventId', async (req, res) => {
   }
 });
 
-// Create task
 router.post('/', async (req, res) => {
   try {
     const { event_id, category_id, title, description, assigned_to, deadline } = req.body;
@@ -42,59 +40,41 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Event ID and title are required' });
     }
 
-    const task = await db.tasks.insert({
-      event_id,
-      category_id: category_id || null,
-      title,
-      description: description || '',
-      assigned_to: assigned_to || null,
-      status: 'pending',
-      deadline: deadline || null,
-      created_at: new Date().toISOString()
+    const task = await db.tasks.create({
+      event_id, category_id: category_id || null, title,
+      description: description || '', assigned_to: assigned_to || null,
+      status: 'pending', deadline: deadline || null
     });
 
-    // Notify assigned user
     if (assigned_to) {
-      await db.notifications.insert({
-        user_id: assigned_to,
-        event_id,
-        message: `You've been assigned a new task: "${title}"`,
-        is_read: false,
-        created_at: new Date().toISOString()
+      await db.notifications.create({
+        user_id: assigned_to, event_id,
+        message: `You've been assigned a new task: "${title}"`
       });
     }
 
     let assigned_username = null;
     let category_name = null;
     if (task.assigned_to) {
-      const user = await db.users.findOne({ _id: task.assigned_to });
+      const user = await db.users.findById(task.assigned_to);
       assigned_username = user?.username || null;
     }
     if (task.category_id) {
-      const cat = await db.categories.findOne({ _id: task.category_id });
+      const cat = await db.categories.findById(task.category_id);
       category_name = cat?.name || null;
     }
 
-    const enrichedTask = { id: task._id, ...task, assigned_username, category_name };
-
-    // Emit real-time event to all users in this event room
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`event-${event_id}`).emit('task-created', enrichedTask);
-    }
-
-    res.status(201).json(enrichedTask);
+    res.status(201).json({ id: task._id.toString(), ...task.toObject(), assigned_username, category_name });
   } catch (err) {
     res.status(500).json({ error: 'Failed to create task' });
   }
 });
 
-// Update task
 router.put('/:id', async (req, res) => {
   try {
     const { title, description, assigned_to, status, deadline, category_id } = req.body;
 
-    const existing = await db.tasks.findOne({ _id: req.params.id });
+    const existing = await db.tasks.findById(req.params.id);
     if (!existing) return res.status(404).json({ error: 'Task not found' });
 
     const updates = {};
@@ -105,56 +85,35 @@ router.put('/:id', async (req, res) => {
     if (deadline !== undefined) updates.deadline = deadline;
     if (category_id !== undefined) updates.category_id = category_id;
 
-    await db.tasks.update({ _id: req.params.id }, { $set: updates });
+    await db.tasks.findByIdAndUpdate(req.params.id, updates);
 
-    // Notify if reassigned
     if (assigned_to && assigned_to !== existing.assigned_to) {
-      await db.notifications.insert({
-        user_id: assigned_to,
-        event_id: existing.event_id,
-        message: `You've been assigned task: "${title || existing.title}"`,
-        is_read: false,
-        created_at: new Date().toISOString()
+      await db.notifications.create({
+        user_id: assigned_to, event_id: existing.event_id,
+        message: `You've been assigned task: "${title || existing.title}"`
       });
     }
 
-    const task = await db.tasks.findOne({ _id: req.params.id });
+    const task = await db.tasks.findById(req.params.id).lean();
     let assigned_username = null;
     let category_name = null;
     if (task.assigned_to) {
-      const user = await db.users.findOne({ _id: task.assigned_to });
+      const user = await db.users.findById(task.assigned_to);
       assigned_username = user?.username || null;
     }
     if (task.category_id) {
-      const cat = await db.categories.findOne({ _id: task.category_id });
+      const cat = await db.categories.findById(task.category_id);
       category_name = cat?.name || null;
     }
 
-    const enrichedTask = { id: task._id, ...task, assigned_username, category_name };
-
-    // Emit real-time event to all users in this event room
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`event-${task.event_id}`).emit('task-updated', enrichedTask);
-    }
-
-    res.json(enrichedTask);
+    res.json({ id: task._id.toString(), ...task, assigned_username, category_name });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update task' });
   }
 });
 
-// Delete task
 router.delete('/:id', async (req, res) => {
-  const task = await db.tasks.findOne({ _id: req.params.id });
-  await db.tasks.remove({ _id: req.params.id });
-
-  // Emit real-time event to all users in this event room
-  const io = req.app.get('io');
-  if (io && task) {
-    io.to(`event-${task.event_id}`).emit('task-deleted', { id: req.params.id, event_id: task.event_id });
-  }
-
+  await db.tasks.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 

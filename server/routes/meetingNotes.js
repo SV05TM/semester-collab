@@ -5,15 +5,14 @@ import { authenticateToken } from '../middleware/auth.js';
 const router = Router();
 router.use(authenticateToken);
 
-// Get all meeting notes for an event
 router.get('/event/:eventId', async (req, res) => {
   try {
-    const notes = await db.meetingNotes.find({ event_id: req.params.eventId }).sort({ meeting_date: -1 });
+    const notes = await db.meetingNotes.find({ event_id: req.params.eventId }).sort({ meeting_date: -1 }).lean();
 
     const enriched = [];
     for (const note of notes) {
-      const user = await db.users.findOne({ _id: note.created_by });
-      enriched.push({ id: note._id, ...note, created_by_name: user?.username || 'Unknown' });
+      const user = await db.users.findById(note.created_by);
+      enriched.push({ id: note._id.toString(), ...note, created_by_name: user?.username || 'Unknown' });
     }
 
     res.json(enriched);
@@ -22,54 +21,39 @@ router.get('/event/:eventId', async (req, res) => {
   }
 });
 
-// Get single meeting note
 router.get('/:id', async (req, res) => {
   try {
-    const note = await db.meetingNotes.findOne({ _id: req.params.id });
+    const note = await db.meetingNotes.findById(req.params.id).lean();
     if (!note) return res.status(404).json({ error: 'Note not found' });
 
-    const user = await db.users.findOne({ _id: note.created_by });
-    res.json({ id: note._id, ...note, created_by_name: user?.username || 'Unknown' });
+    const user = await db.users.findById(note.created_by);
+    res.json({ id: note._id.toString(), ...note, created_by_name: user?.username || 'Unknown' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to load note' });
   }
 });
 
-// Create meeting note
 router.post('/', async (req, res) => {
   try {
     const { event_id, title, meeting_date, attendees, agenda, discussion, action_items, decisions } = req.body;
+    if (!event_id || !title) return res.status(400).json({ error: 'Event ID and title are required' });
 
-    if (!event_id || !title) {
-      return res.status(400).json({ error: 'Event ID and title are required' });
-    }
-
-    const note = await db.meetingNotes.insert({
-      event_id,
-      title,
-      meeting_date: meeting_date || new Date().toISOString(),
-      attendees: attendees || [],
-      agenda: agenda || '',
-      discussion: discussion || '',
-      action_items: action_items || [],
-      decisions: decisions || '',
-      created_by: req.user.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+    const note = await db.meetingNotes.create({
+      event_id, title, meeting_date: meeting_date || new Date().toISOString(),
+      attendees: attendees || [], agenda: agenda || '', discussion: discussion || '',
+      action_items: action_items || [], decisions: decisions || '', created_by: req.user.id
     });
 
-    const user = await db.users.findOne({ _id: req.user.id });
-    res.status(201).json({ id: note._id, ...note, created_by_name: user?.username || 'Unknown' });
+    const user = await db.users.findById(req.user.id);
+    res.status(201).json({ id: note._id.toString(), ...note.toObject(), created_by_name: user?.username || 'Unknown' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to create meeting note' });
   }
 });
 
-// Update meeting note
 router.put('/:id', async (req, res) => {
   try {
     const { title, meeting_date, attendees, agenda, discussion, action_items, decisions } = req.body;
-
     const updates = { updated_at: new Date().toISOString() };
     if (title !== undefined) updates.title = title;
     if (meeting_date !== undefined) updates.meeting_date = meeting_date;
@@ -79,17 +63,16 @@ router.put('/:id', async (req, res) => {
     if (action_items !== undefined) updates.action_items = action_items;
     if (decisions !== undefined) updates.decisions = decisions;
 
-    await db.meetingNotes.update({ _id: req.params.id }, { $set: updates });
-    const note = await db.meetingNotes.findOne({ _id: req.params.id });
-    res.json({ id: note._id, ...note });
+    await db.meetingNotes.findByIdAndUpdate(req.params.id, updates);
+    const note = await db.meetingNotes.findById(req.params.id).lean();
+    res.json({ id: note._id.toString(), ...note });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update note' });
   }
 });
 
-// Delete meeting note
 router.delete('/:id', async (req, res) => {
-  await db.meetingNotes.remove({ _id: req.params.id });
+  await db.meetingNotes.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 
