@@ -13,7 +13,7 @@ describe('Finances API', () => {
       .post('/api/auth/register')
       .send({
         username: 'finuser_' + Date.now(),
-        email: `finuser_${Date.now()}@example.com`,
+        email: `finuser_${Date.now()}@gmu.edu`,
         password: 'password123'
       });
     token = userRes.body.token;

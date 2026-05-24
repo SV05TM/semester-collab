@@ -13,7 +13,7 @@ describe('Events API', () => {
       .post('/api/auth/register')
       .send({
         username: 'eventuser_' + Date.now(),
-        email: `eventuser_${Date.now()}@example.com`,
+        email: `eventuser_${Date.now()}@gmu.edu`,
         password: 'password123'
       });
     token = res.body.token;

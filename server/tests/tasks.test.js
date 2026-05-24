@@ -13,7 +13,7 @@ describe('Tasks API', () => {
       .post('/api/auth/register')
       .send({
         username: 'taskuser_' + Date.now(),
-        email: `taskuser_${Date.now()}@example.com`,
+        email: `taskuser_${Date.now()}@gmu.edu`,
         password: 'password123'
       });
     token = userRes.body.token;

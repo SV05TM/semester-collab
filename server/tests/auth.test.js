@@ -6,7 +6,7 @@ describe('Auth API', () => {
   let token;
   const testUser = {
     username: 'testuser_' + Date.now(),
-    email: `test_${Date.now()}@example.com`,
+    email: `test_${Date.now()}@gmu.edu`,
     password: 'password123'
   };
 
