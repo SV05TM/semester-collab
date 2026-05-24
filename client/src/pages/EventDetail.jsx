@@ -6,6 +6,7 @@ import TaskBoard from '../components/TaskBoard';
 import FinancePanel from '../components/FinancePanel';
 import ChatPanel from '../components/ChatPanel';
 import MembersPanel from '../components/MembersPanel';
+import MeetingNotes from '../components/MeetingNotes';
 import NotificationBell from '../components/NotificationBell';
 
 export default function EventDetail({ user, onLogout }) {
@@ -79,6 +80,7 @@ export default function EventDetail({ user, onLogout }) {
   const tabs = [
     { id: 'tasks', label: 'Tasks', icon: '📋' },
     { id: 'finances', label: 'Finances', icon: '💰' },
+    { id: 'planning', label: 'Planning', icon: '📝' },
     { id: 'chat', label: 'Chat', icon: '💬' },
     { id: 'members', label: `Team (${event.members?.length || 0})`, icon: '👥' },
   ];
@@ -211,6 +213,9 @@ export default function EventDetail({ user, onLogout }) {
         )}
         {activeTab === 'finances' && (
           <FinancePanel eventId={id} user={user} eventInfo={event} />
+        )}
+        {activeTab === 'planning' && (
+          <MeetingNotes eventId={id} members={event.members || []} user={user} />
         )}
         {activeTab === 'chat' && (
           <ChatPanel eventId={id} user={user} />

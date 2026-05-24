@@ -31,6 +31,7 @@ const db = {
   notifications: createStore('notifications'),
   groups: createStore('groups'),
   pushSubscriptions: createStore('push_subscriptions'),
+  meetingNotes: createStore('meeting_notes'),
 };
 
 // Ensure unique indexes

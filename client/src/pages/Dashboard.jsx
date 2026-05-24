@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import NotificationBell from '../components/NotificationBell';
+import CalendarView from '../components/CalendarView';
 
 export default function Dashboard({ user, onLogout }) {
   const [events, setEvents] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'calendar'
   const [form, setForm] = useState({
     title: '', description: '', organization: '', start_date: '', end_date: '', event_time: '', event_location: '', members: []
   });
@@ -85,15 +87,38 @@ export default function Dashboard({ user, onLogout }) {
             <h2 className="text-2xl font-bold text-gray-900">Your Events</h2>
             <p className="text-gray-500 text-sm mt-1">Manage and collaborate on your semester events</p>
           </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition font-medium shadow-lg shadow-indigo-500/25 flex items-center gap-2"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            New Event
-          </button>
+          <div className="flex items-center gap-3">
+            {/* View toggle */}
+            <div className="flex bg-gray-100 rounded-lg p-0.5">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'grid' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+                aria-label="Grid view"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode('calendar')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'calendar' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+                aria-label="Calendar view"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition font-medium shadow-lg shadow-indigo-500/25 flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Event
+            </button>
+          </div>
         </div>
 
         {showCreate && (
@@ -235,6 +260,8 @@ export default function Dashboard({ user, onLogout }) {
               Create Your First Event
             </button>
           </div>
+        ) : viewMode === 'calendar' ? (
+          <CalendarView events={events} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {events.map((event, idx) => (

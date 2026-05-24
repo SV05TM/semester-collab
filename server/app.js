@@ -7,6 +7,7 @@ import financeRoutes from './routes/finances.js';
 import messageRoutes from './routes/messages.js';
 import notificationRoutes from './routes/notifications.js';
 import pushRoutes from './routes/push.js';
+import meetingNotesRoutes from './routes/meetingNotes.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -26,5 +27,6 @@ app.use('/api/finances', financeRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/push', pushRoutes);
+app.use('/api/meeting-notes', meetingNotesRoutes);
 
 export default app;
