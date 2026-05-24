@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   organization: { type: String, default: '' },
+  organizations: { type: [String], default: [] },
   created_at: { type: String, default: () => new Date().toISOString() }
 });
 

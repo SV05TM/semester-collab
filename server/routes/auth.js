@@ -27,7 +27,7 @@ router.post('/register', async (req, res) => {
     const user = await db.users.create({ username, email, password: hashedPassword });
 
     const token = generateToken(user);
-    res.status(201).json({ user: { id: user._id.toString(), username: user.username, email: user.email, organization: user.organization || '' }, token });
+    res.status(201).json({ user: { id: user._id.toString(), username: user.username, email: user.email, organization: user.organization || '', organizations: user.organizations || [] }, token });
   } catch (err) {
     res.status(500).json({ error: 'Registration failed' });
   }
@@ -47,7 +47,7 @@ router.post('/login', async (req, res) => {
     }
 
     const token = generateToken(user);
-    res.json({ user: { id: user._id.toString(), username: user.username, email: user.email, organization: user.organization || '' }, token });
+    res.json({ user: { id: user._id.toString(), username: user.username, email: user.email, organization: user.organization || '', organizations: user.organizations || [] }, token });
   } catch (err) {
     res.status(500).json({ error: 'Login failed' });
   }
@@ -56,18 +56,28 @@ router.post('/login', async (req, res) => {
 router.get('/me', authenticateToken, async (req, res) => {
   const user = await db.users.findById(req.user.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json({ user: { id: user._id.toString(), username: user.username, email: user.email, organization: user.organization || '' } });
+  res.json({ user: { id: user._id.toString(), username: user.username, email: user.email, organization: user.organization || '', organizations: user.organizations || [] } });
 });
 
 // Update user profile (organization name)
 router.put('/me', authenticateToken, async (req, res) => {
   const { organization } = req.body;
   const updates = {};
-  if (organization !== undefined) updates.organization = organization;
+  if (organization !== undefined) {
+    updates.organization = organization;
+    // Add to organizations list if new
+    if (organization) {
+      const user = await db.users.findById(req.user.id);
+      const orgs = user.organizations || [];
+      if (!orgs.includes(organization)) {
+        updates.organizations = [...orgs, organization];
+      }
+    }
+  }
 
   await db.users.findByIdAndUpdate(req.user.id, updates);
   const user = await db.users.findById(req.user.id);
-  res.json({ user: { id: user._id.toString(), username: user.username, email: user.email, organization: user.organization || '' } });
+  res.json({ user: { id: user._id.toString(), username: user.username, email: user.email, organization: user.organization || '', organizations: user.organizations || [] } });
 });
 
 router.get('/users', authenticateToken, async (req, res) => {

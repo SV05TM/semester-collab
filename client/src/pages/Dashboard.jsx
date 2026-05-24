@@ -55,6 +55,18 @@ export default function Dashboard({ user, onLogout }) {
     }));
   };
 
+  const deleteEvent = async (eventId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Delete this event? This cannot be undone.')) return;
+    try {
+      await api.delete(`/events/${eventId}`);
+      loadEvents();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to delete event');
+    }
+  };
+
   const eventColors = [
     'from-indigo-500 to-blue-500',
     'from-purple-500 to-pink-500',
@@ -150,14 +162,40 @@ export default function Dashboard({ user, onLogout }) {
               <form onSubmit={createEvent} className="space-y-4">
                 <div>
                   <label htmlFor="org-name" className="block text-sm font-medium text-gray-700 mb-1.5">Organization Name</label>
-                  <input
-                    id="org-name"
-                    type="text"
-                    value={form.organization}
-                    onChange={(e) => setForm({ ...form, organization: e.target.value })}
-                    placeholder="e.g. Phi Iota Alpha"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 focus:bg-white"
-                  />
+                  <div className="relative">
+                    <input
+                      id="org-name"
+                      type="text"
+                      value={form.organization}
+                      onChange={(e) => setForm({ ...form, organization: e.target.value })}
+                      placeholder="e.g. Phi Iota Alpha"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 focus:bg-white"
+                      list="org-suggestions"
+                    />
+                    <datalist id="org-suggestions">
+                      {(user.organizations || []).map((org, idx) => (
+                        <option key={idx} value={org} />
+                      ))}
+                    </datalist>
+                  </div>
+                  {(user.organizations || []).length > 0 && (
+                    <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                      {user.organizations.map((org, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setForm({ ...form, organization: org })}
+                          className={`text-[11px] px-2 py-0.5 rounded-full transition ${
+                            form.organization === org
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {org}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="event-title" className="block text-sm font-medium text-gray-700 mb-1.5">Event Title</label>
@@ -295,11 +333,15 @@ export default function Dashboard({ user, onLogout }) {
                         <p className="text-indigo-600 text-xs font-semibold mt-0.5 uppercase tracking-wide">{event.organization}</p>
                       )}
                     </div>
-                    <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-indigo-50 transition">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 group-hover:text-indigo-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <button
+                      onClick={(e) => deleteEvent(event.id, e)}
+                      className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center hover:bg-red-50 transition opacity-0 group-hover:opacity-100"
+                      aria-label={`Delete ${event.title}`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 hover:text-red-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
-                    </div>
+                    </button>
                   </div>
                   {event.description && (
                     <p className="text-gray-500 text-sm mb-4 line-clamp-2">{event.description}</p>
