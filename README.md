@@ -1,69 +1,170 @@
 # Semester Collab
 
-A full-stack team collaboration app for managing semester events. Create events, track finances, marketing, logistics, assign tasks to team members, and communicate in real-time.
+A full-stack team collaboration app for managing semester events. Built for GMU student organizations to plan events, track budgets, assign tasks, and communicate in real-time.
 
 ## Features
 
-- **Multi-user auth** — Register/login with JWT-based sessions
-- **Event management** — Create semester events with dates, descriptions, and team members
-- **Category tracking** — Each event auto-creates Finances, Marketing, Logistics, and General categories (add custom ones too)
-- **Task assignment** — Create tasks, assign to team members, set deadlines, track status (pending/in-progress/completed)
-- **Finance tracking** — Log income and expenses per event with running totals
-- **Real-time chat** — Socket.IO powered messaging per event
-- **Notifications** — Get pinged when assigned tasks, approaching deadlines, and team messages
-- **Multi-user** — Invite team members to events, everyone sees the same data
+### Event Management
+- Create events with organization name, date, time, and location
+- Edit event details anytime
+- Calendar view to see all events at a glance
+- Export full event reports to Word (.docx)
 
-## Quick Start
+### Kanban Task Board
+- Drag-and-drop tasks between columns: To Do → In Progress → Done
+- Priority levels: Low, Medium, High, Urgent
+- Assign tasks to team members with deadline tracking
+- Filter by section (Finances, Marketing, Logistics, General)
+- Click any task to edit title, description, assignee, priority, status, and due date
+- Overdue task highlighting
 
-### 1. Start the server
+### Finances
+- **Event Budget** — SFB-style budget request form (Vendor, Item Type, Quantity, Price Per Item, Total)
+- **Fundraising** — Track revenue and expenses per activity with net profit
+- Export to Excel (.xls) and CSV with formatted headers
 
-```bash
-cd server
-npm install
-npm run dev
-```
+### Meeting Notes & Planning
+- Document meetings with agenda, discussion notes, action items, and decisions
+- Track action item completion with checkboxes
+- Select attendees from your team
 
-Server runs on http://localhost:3001
+### Real-Time Communication
+- Event chat powered by Socket.IO
+- Push notifications on mobile (even when app is closed)
+- Ping individual members or entire groups
+- Deadline reminders notify assigned members
 
-### 2. Start the client
+### Team & People
+- **Friends system** — Add/remove friends from a global user directory
+- **Role-based access** — Admin, Co-Admin, Co-Host, Member
+- **Groups** — Organize members into sub-teams
+- Only admins/co-admins can add or remove event members
+- Promote members to Co-Host or Co-Admin
 
-```bash
-cd client
-npm install
-npm run dev
-```
-
-Client runs on http://localhost:5173
-
-### 3. Use the app
-
-1. Register two or more accounts (use different browsers or incognito)
-2. Create an event and add team members
-3. Open the event to see Tasks, Finances, and Chat tabs
-4. Assign tasks, set deadlines, track budgets, and chat in real-time
+### Mobile & PWA
+- Installable as a Progressive Web App (add to home screen)
+- Push notifications on Android and iOS (16.4+)
+- Responsive design optimized for mobile
+- Horizontally scrollable tabs and touch-friendly controls
 
 ## Tech Stack
 
 - **Frontend**: React 18, Vite, Tailwind CSS, Socket.IO Client
-- **Backend**: Node.js, Express, Socket.IO
-- **Database**: NeDB (embedded, zero-config, file-based)
-- **Auth**: JWT + bcrypt
+- **Backend**: Node.js, Express, Socket.IO, Mongoose
+- **Database**: MongoDB Atlas (cloud-hosted, persistent)
+- **Auth**: JWT + bcrypt, GMU email required (@gmu.edu / @masonlive.gmu.edu)
+- **Push**: Web Push API with VAPID keys
+- **Export**: docx library (Word), HTML tables (Excel)
+- **Deployment**: Render (auto-deploy from GitHub)
+- **CI/CD**: GitHub Actions (28 server tests + 10 client tests)
+
+## Quick Start (Local Development)
+
+### Prerequisites
+- Node.js 18+
+- MongoDB running locally or a MongoDB Atlas connection string
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/SV05TM/semester-collab.git
+cd semester-collab
+cd server && npm install
+cd ../client && npm install
+```
+
+### 2. Configure environment
+
+Create `server/.env`:
+```
+MONGODB_URI=mongodb://localhost:27017/semester-collab
+JWT_SECRET=your-secret-here
+```
+
+### 3. Run
+
+```bash
+# Terminal 1 - Server
+cd server
+npm run dev
+
+# Terminal 2 - Client
+cd client
+npm run dev
+```
+
+Open http://localhost:5173
+
+## Deployment
+
+The app is configured for one-click deploy on Render:
+
+1. Push to GitHub
+2. Render auto-builds and deploys
+3. Environment variables needed on Render:
+   - `NODE_ENV=production`
+   - `MONGODB_URI` — your Atlas connection string
+   - `JWT_SECRET` — auto-generated
+   - `VAPID_PUBLIC_KEY` — for push notifications
+   - `VAPID_PRIVATE_KEY` — for push notifications
+   - `VAPID_EMAIL` — mailto:your-email
+
+## Running Tests
+
+```bash
+# Server tests (28 API tests)
+cd server && npm test
+
+# Client tests (10 component tests)
+cd client && npm test
+```
 
 ## Project Structure
 
 ```
 server/
-  index.js          — Express + Socket.IO server
-  db.js             — NeDB database setup
-  middleware/       — JWT auth middleware
-  routes/           — API routes (auth, events, tasks, finances, messages, notifications)
-  data/             — Database files (auto-created)
+  app.js              — Express app setup and route mounting
+  index.js            — HTTP server, Socket.IO, and startup
+  db.js               — Mongoose schemas and MongoDB connection
+  middleware/auth.js  — JWT authentication
+  routes/
+    auth.js           — Register, login, user list
+    events.js         — CRUD events, members, groups, categories
+    tasks.js          — CRUD tasks with priority and assignment
+    finances.js       — Budget and fundraising entries
+    messages.js       — Chat messages (REST)
+    notifications.js  — Notification history
+    meetingNotes.js   — Meeting notes CRUD
+    friends.js        — Friends list management
+    push.js           — Push notification subscriptions
+  tests/              — Vitest API tests
 
 client/
   src/
-    App.jsx         — Router and auth state
-    api.js          — Axios instance with auth interceptor
-    socket.js       — Socket.IO client
-    pages/          — Login, Register, Dashboard, EventDetail
-    components/     — TaskBoard, FinancePanel, ChatPanel, NotificationBell
+    App.jsx           — Router, auth state, onboarding
+    api.js            — Axios with auth interceptor
+    socket.js         — Socket.IO client
+    pages/
+      Login.jsx       — Sign in
+      Register.jsx    — Create account (GMU email required)
+      Dashboard.jsx   — Event grid + calendar view
+      EventDetail.jsx — Event workspace with tabs
+      People.jsx      — Friends list + user directory
+    components/
+      TaskBoard.jsx       — Kanban board with drag-drop
+      FinancePanel.jsx    — Budget/Fundraising toggle
+      BudgetPanel.jsx     — SFB budget table
+      FundraisingPanel.jsx — Revenue/expense tracking
+      ChatPanel.jsx       — Real-time messaging
+      MembersPanel.jsx    — Team management with roles
+      MeetingNotes.jsx    — Planning session docs
+      CalendarView.jsx    — Monthly calendar
+      NotificationBell.jsx — Notification dropdown + push toggle
+      OnboardingTutorial.jsx — First-time user walkthrough
+    exportEventDoc.js — Word document generation
+    usePushNotifications.js — Push subscription hook
 ```
+
+## License
+
+MIT
