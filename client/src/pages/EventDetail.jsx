@@ -16,6 +16,8 @@ export default function EventDetail({ user, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [exporting, setExporting] = useState(false);
+  const [showEditEvent, setShowEditEvent] = useState(false);
+  const [editForm, setEditForm] = useState({});
 
   const handleExportWord = async () => {
     setExporting(true);
@@ -26,6 +28,30 @@ export default function EventDetail({ user, onLogout }) {
       console.error('Export failed', err);
     }
     setExporting(false);
+  };
+
+  const openEditEvent = () => {
+    setEditForm({
+      title: event.title || '',
+      description: event.description || '',
+      organization: event.organization || '',
+      start_date: event.start_date || '',
+      end_date: event.end_date || '',
+      event_time: event.event_time || '',
+      event_location: event.event_location || ''
+    });
+    setShowEditEvent(true);
+  };
+
+  const saveEventEdit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/events/${id}`, editForm);
+      setShowEditEvent(false);
+      loadEvent();
+    } catch (err) {
+      console.error('Failed to update event', err);
+    }
   };
 
   useEffect(() => {
@@ -159,7 +185,7 @@ export default function EventDetail({ user, onLogout }) {
             )}
           </div>
 
-          {/* Members + Export row */}
+          {/* Members + Actions row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex -space-x-2">
@@ -176,15 +202,109 @@ export default function EventDetail({ user, onLogout }) {
               </div>
               <span className="text-xs text-gray-500">{event.members?.length} member{event.members?.length !== 1 ? 's' : ''}</span>
             </div>
-            <button
-              onClick={handleExportWord}
-              disabled={exporting}
-              className="flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-200 transition disabled:opacity-50"
-            >
-              {exporting ? '⏳' : '📄'} Export
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={openEditEvent}
+                className="flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-200 transition"
+              >
+                ✏️ Edit
+              </button>
+              <button
+                onClick={handleExportWord}
+                disabled={exporting}
+                className="flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-200 transition disabled:opacity-50"
+              >
+                {exporting ? '⏳' : '📄'} Export
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Edit Event Modal */}
+        {showEditEvent && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Edit Event</h3>
+                <button onClick={() => setShowEditEvent(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+              </div>
+              <form onSubmit={saveEventEdit} className="space-y-3">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Event Title</label>
+                  <input
+                    type="text"
+                    value={editForm.title}
+                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Organization</label>
+                  <input
+                    type="text"
+                    value={editForm.organization}
+                    onChange={(e) => setEditForm({ ...editForm, organization: e.target.value })}
+                    placeholder="e.g. Phi Iota Alpha"
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Description</label>
+                  <textarea
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm"
+                    rows={2}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Event Date</label>
+                    <input
+                      type="date"
+                      value={editForm.start_date}
+                      onChange={(e) => setEditForm({ ...editForm, start_date: e.target.value })}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Event Time</label>
+                    <input
+                      type="time"
+                      value={editForm.event_time}
+                      onChange={(e) => setEditForm({ ...editForm, event_time: e.target.value })}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Location</label>
+                  <input
+                    type="text"
+                    value={editForm.event_location}
+                    onChange={(e) => setEditForm({ ...editForm, event_location: e.target.value })}
+                    placeholder="e.g. Student Union Room 201"
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">End Date (optional)</label>
+                  <input
+                    type="date"
+                    value={editForm.end_date}
+                    onChange={(e) => setEditForm({ ...editForm, end_date: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm"
+                  />
+                </div>
+                <div className="flex gap-2 justify-end pt-3 border-t">
+                  <button type="button" onClick={() => setShowEditEvent(false)} className="px-4 py-2 text-gray-500 text-sm">Cancel</button>
+                  <button type="submit" className="bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Tabs - horizontally scrollable on mobile */}
         <div className="mb-4 -mx-4 px-4 overflow-x-auto scrollbar-hide">
