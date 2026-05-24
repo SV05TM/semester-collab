@@ -7,8 +7,12 @@ vi.mock('../socket', () => ({
   default: {
     emit: vi.fn(),
     on: vi.fn(),
-    off: vi.fn()
-  }
+    off: vi.fn(),
+    connect: vi.fn(),
+    disconnect: vi.fn()
+  },
+  connectSocket: vi.fn(),
+  disconnectSocket: vi.fn()
 }));
 
 // Need to import after mocks
