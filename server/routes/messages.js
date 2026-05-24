@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import db from '../db.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { requireEventMember, checkEventMemberFromBody } from '../middleware/eventAccess.js';
 
 const router = Router();
 router.use(authenticateToken);
 
-router.get('/event/:eventId', async (req, res) => {
+router.get('/event/:eventId', requireEventMember('eventId'), async (req, res) => {
   try {
     const messages = await db.messages.find({ event_id: req.params.eventId }).sort({ created_at: 1 }).lean();
 
@@ -21,7 +22,7 @@ router.get('/event/:eventId', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', checkEventMemberFromBody, async (req, res) => {
   try {
     const { event_id, content } = req.body;
     if (!event_id || !content) return res.status(400).json({ error: 'Event ID and content are required' });

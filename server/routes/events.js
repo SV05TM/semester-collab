@@ -93,6 +93,12 @@ router.get('/:id', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
+  // Only admin or co-admin can edit event details
+  const requester = await db.eventMembers.findOne({ event_id: req.params.id, user_id: req.user.id });
+  if (!requester || !['admin', 'co-admin'].includes(requester.role)) {
+    return res.status(403).json({ error: 'Only admins can edit event details' });
+  }
+
   const { title, description, organization, start_date, end_date, event_time, event_location } = req.body;
   const updates = {};
   if (title !== undefined) updates.title = title;

@@ -6,7 +6,7 @@ import Dashboard from './pages/Dashboard';
 import EventDetail from './pages/EventDetail';
 import People from './pages/People';
 import OnboardingTutorial from './components/OnboardingTutorial';
-import socket from './socket';
+import socket, { connectSocket, disconnectSocket } from './socket';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -19,7 +19,7 @@ function App() {
     if (stored) {
       const parsed = JSON.parse(stored);
       setUser(parsed);
-      socket.emit('register', parsed.id.toString());
+      connectSocket();
     }
     setLoading(false);
   }, []);
@@ -41,7 +41,7 @@ function App() {
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', token);
     setUser(userData);
-    socket.emit('register', userData.id.toString());
+    connectSocket();
 
     // Show onboarding for new users or if they haven't seen it
     if (isNewUser || !localStorage.getItem('onboarding_done')) {
@@ -57,6 +57,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    disconnectSocket();
     setUser(null);
   };
 

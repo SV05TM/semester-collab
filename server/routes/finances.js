@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import db from '../db.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { requireEventMember, checkEventMemberFromBody } from '../middleware/eventAccess.js';
 
 const router = Router();
 router.use(authenticateToken);
 
-router.get('/event/:eventId', async (req, res) => {
+router.get('/event/:eventId', requireEventMember('eventId'), async (req, res) => {
   try {
     const query = { event_id: req.params.eventId };
     if (req.query.section) query.section = req.query.section;
@@ -31,7 +32,7 @@ router.get('/event/:eventId', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', checkEventMemberFromBody, async (req, res) => {
   try {
     const { event_id, section, ...fields } = req.body;
     if (!event_id || !section) return res.status(400).json({ error: 'event_id and section are required' });
@@ -46,6 +47,12 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
+    const entry = await db.finances.findById(req.params.id);
+    if (!entry) return res.status(404).json({ error: 'Entry not found' });
+
+    const membership = await db.eventMembers.findOne({ event_id: entry.event_id, user_id: req.user.id });
+    if (!membership) return res.status(403).json({ error: 'You are not a member of this event' });
+
     const updates = { ...req.body };
     delete updates.id;
     delete updates._id;
@@ -58,6 +65,12 @@ router.put('/:id', async (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
+  const entry = await db.finances.findById(req.params.id);
+  if (!entry) return res.json({ success: true });
+
+  const membership = await db.eventMembers.findOne({ event_id: entry.event_id, user_id: req.user.id });
+  if (!membership) return res.status(403).json({ error: 'You are not a member of this event' });
+
   await db.finances.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });

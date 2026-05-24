@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import db from '../db.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { requireEventMember, checkEventMemberFromBody } from '../middleware/eventAccess.js';
 
 const router = Router();
 router.use(authenticateToken);
 
-router.get('/event/:eventId', async (req, res) => {
+router.get('/event/:eventId', requireEventMember('eventId'), async (req, res) => {
   try {
     const tasks = await db.tasks.find({ event_id: req.params.eventId }).sort({ deadline: 1 }).lean();
 
@@ -32,7 +33,7 @@ router.get('/event/:eventId', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', checkEventMemberFromBody, async (req, res) => {
   try {
     const { event_id, category_id, title, description, assigned_to, deadline } = req.body;
 
@@ -72,11 +73,14 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const { title, description, assigned_to, status, deadline, category_id } = req.body;
-
     const existing = await db.tasks.findById(req.params.id);
     if (!existing) return res.status(404).json({ error: 'Task not found' });
 
+    // Verify membership
+    const membership = await db.eventMembers.findOne({ event_id: existing.event_id, user_id: req.user.id });
+    if (!membership) return res.status(403).json({ error: 'You are not a member of this event' });
+
+    const { title, description, assigned_to, status, deadline, category_id } = req.body;
     const updates = {};
     if (title !== undefined) updates.title = title;
     if (description !== undefined) updates.description = description;
@@ -114,6 +118,12 @@ router.put('/:id', async (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
+  const task = await db.tasks.findById(req.params.id);
+  if (!task) return res.json({ success: true });
+
+  const membership = await db.eventMembers.findOne({ event_id: task.event_id, user_id: req.user.id });
+  if (!membership) return res.status(403).json({ error: 'You are not a member of this event' });
+
   await db.tasks.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });

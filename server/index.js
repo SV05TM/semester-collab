@@ -2,9 +2,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
 import app from './app.js';
 import db, { connectDB } from './db.js';
 import { sendPushToUser } from './routes/push.js';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'semester-collab-secret-key-change-in-production';
 
 // Connect to MongoDB
 await connectDB();
@@ -37,13 +40,27 @@ if (isProduction) {
 // Socket.IO for real-time communication
 const onlineUsers = new Map();
 
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+// Socket authentication middleware
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) {
+    return next(new Error('Authentication required'));
+  }
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    socket.userId = decoded.id;
+    socket.username = decoded.username;
+    next();
+  } catch (err) {
+    next(new Error('Invalid token'));
+  }
+});
 
-  socket.on('register', (userId) => {
-    onlineUsers.set(userId, socket.id);
-    socket.userId = userId;
-  });
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id, socket.username);
+
+  // Auto-register with verified user ID
+  onlineUsers.set(socket.userId, socket.id);
 
   socket.on('join-event', (eventId) => {
     socket.join(`event-${eventId}`);
@@ -54,7 +71,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send-message', async (data) => {
-    const { event_id, content, user_id, username } = data;
+    const { event_id, content } = data;
+    const user_id = socket.userId;
+    const username = socket.username;
+
+    // Verify membership
+    const membership = await db.eventMembers.findOne({ event_id, user_id });
+    if (!membership) return;
 
     const message = await db.messages.create({
       event_id,
@@ -90,6 +113,12 @@ io.on('connection', (socket) => {
 
   socket.on('notify-user', async (data) => {
     const { user_id, event_id, message } = data;
+
+    // Verify sender is a member of the event
+    if (event_id) {
+      const membership = await db.eventMembers.findOne({ event_id, user_id: socket.userId });
+      if (!membership) return;
+    }
 
     await db.notifications.create({
       user_id,

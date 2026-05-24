@@ -59,7 +59,7 @@ router.get('/me', authenticateToken, async (req, res) => {
   res.json({ user: { id: user._id.toString(), username: user.username, email: user.email } });
 });
 
-router.get('/users', async (req, res) => {
+router.get('/users', authenticateToken, async (req, res) => {
   const users = await db.users.find({}).select('-password').lean();
   res.json(users.map(u => ({ id: u._id.toString(), username: u.username, email: u.email })));
 });

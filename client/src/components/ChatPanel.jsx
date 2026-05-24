@@ -39,9 +39,7 @@ export default function ChatPanel({ eventId, user }) {
 
     socket.emit('send-message', {
       event_id: eventId,
-      content: input.trim(),
-      user_id: user.id,
-      username: user.username
+      content: input.trim()
     });
 
     setInput('');

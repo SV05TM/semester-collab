@@ -1,10 +1,26 @@
 import { io } from 'socket.io-client';
 
-// In production, the client is served from the same origin as the server
-// In development, we connect to localhost:3001
 const serverURL = import.meta.env.VITE_SERVER_URL ||
   (import.meta.env.PROD ? window.location.origin : 'http://localhost:3001');
 
-const socket = io(serverURL);
+const socket = io(serverURL, {
+  auth: {
+    token: localStorage.getItem('token')
+  },
+  autoConnect: false
+});
+
+// Reconnect with fresh token when it changes
+export function connectSocket() {
+  const token = localStorage.getItem('token');
+  if (token) {
+    socket.auth = { token };
+    socket.connect();
+  }
+}
+
+export function disconnectSocket() {
+  socket.disconnect();
+}
 
 export default socket;

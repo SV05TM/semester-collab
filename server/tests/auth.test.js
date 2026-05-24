@@ -94,13 +94,20 @@ describe('Auth API', () => {
   });
 
   describe('GET /api/auth/users', () => {
-    it('should return list of users', async () => {
-      const res = await request(app).get('/api/auth/users');
+    it('should return list of users when authenticated', async () => {
+      const res = await request(app)
+        .get('/api/auth/users')
+        .set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThan(0);
       // Should not expose passwords
       expect(res.body[0].password).toBeUndefined();
+    });
+
+    it('should reject unauthenticated request', async () => {
+      const res = await request(app).get('/api/auth/users');
+      expect(res.status).toBe(401);
     });
   });
 });
