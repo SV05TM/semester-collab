@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import EventDetail from './pages/EventDetail';
+import People from './pages/People';
 import OnboardingTutorial from './components/OnboardingTutorial';
 import socket from './socket';
 
@@ -82,6 +83,7 @@ function App() {
         <Route path="/register" element={user ? <Navigate to="/" /> : <Register onLogin={handleLogin} />} />
         <Route path="/" element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
         <Route path="/event/:id" element={user ? <EventDetail user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
+        <Route path="/people" element={user ? <People user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
       </Routes>
     </>
   );

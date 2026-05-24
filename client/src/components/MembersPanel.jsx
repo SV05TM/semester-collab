@@ -2,17 +2,29 @@ import { useState, useEffect } from 'react';
 import api from '../api';
 import socket from '../socket';
 
+const ROLES = [
+  { id: 'member', label: 'Member', color: 'bg-gray-100 text-gray-600' },
+  { id: 'co-host', label: 'Co-Host', color: 'bg-blue-100 text-blue-700' },
+  { id: 'co-admin', label: 'Co-Admin', color: 'bg-purple-100 text-purple-700' },
+  { id: 'admin', label: 'Admin', color: 'bg-indigo-100 text-indigo-700' }
+];
+
 export default function MembersPanel({ eventId, members, groups, user, onMembersChanged }) {
   const [allUsers, setAllUsers] = useState([]);
+  const [friends, setFriends] = useState([]);
   const [showInvite, setShowInvite] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [pingMessage, setPingMessage] = useState('');
   const [pingTarget, setPingTarget] = useState(null);
-  const [viewMode, setViewMode] = useState('all'); // 'all' or a group id
+  const [inviteTab, setInviteTab] = useState('friends');
+
+  const currentUserRole = members.find(m => m.id === user.id)?.role || 'member';
+  const isAdmin = ['admin', 'co-admin'].includes(currentUserRole);
 
   useEffect(() => {
     loadUsers();
+    loadFriends();
   }, []);
 
   const loadUsers = async () => {
@@ -20,15 +32,40 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
     setAllUsers(data);
   };
 
-  const addMember = async (userId, groupId) => {
-    await api.post(`/events/${eventId}/members`, { user_id: userId, group: groupId || null });
-    socket.emit('notify-user', {
-      user_id: userId,
-      event_id: eventId,
-      message: `You've been added to an event by ${user.username}`
-    });
-    onMembersChanged();
-    loadUsers();
+  const loadFriends = async () => {
+    try {
+      const { data } = await api.get('/friends');
+      setFriends(data);
+    } catch (err) { console.error(err); }
+  };
+
+  const addMember = async (userId) => {
+    try {
+      await api.post(`/events/${eventId}/members`, { user_id: userId });
+      socket.emit('notify-user', { user_id: userId, event_id: eventId, message: `You've been added to an event by ${user.username}` });
+      onMembersChanged();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to add member');
+    }
+  };
+
+  const removeMember = async (userId) => {
+    if (!confirm('Remove this member from the event?')) return;
+    try {
+      await api.delete(`/events/${eventId}/members/${userId}`);
+      onMembersChanged();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to remove member');
+    }
+  };
+
+  const changeRole = async (userId, role) => {
+    try {
+      await api.put(`/events/${eventId}/members/${userId}`, { role });
+      onMembersChanged();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to change role');
+    }
   };
 
   const assignGroup = async (userId, groupId) => {
@@ -46,314 +83,213 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
 
   const deleteGroup = async (groupId) => {
     await api.delete(`/events/${eventId}/groups/${groupId}`);
-    if (viewMode === groupId) setViewMode('all');
     onMembersChanged();
   };
 
   const sendPing = (targetUser) => {
     if (!pingMessage.trim()) return;
-    socket.emit('notify-user', {
-      user_id: targetUser.id,
-      event_id: eventId,
-      message: `📢 ${user.username} pinged you: "${pingMessage}"`
-    });
+    socket.emit('notify-user', { user_id: targetUser.id, event_id: eventId, message: `📢 ${user.username}: "${pingMessage}"` });
     setPingMessage('');
     setPingTarget(null);
   };
 
   const pingAll = () => {
     if (!pingMessage.trim()) return;
-    const targets = viewMode === 'all'
-      ? members.filter(m => m.id !== user.id)
-      : members.filter(m => m.id !== user.id && m.group === viewMode);
-
-    for (const member of targets) {
-      socket.emit('notify-user', {
-        user_id: member.id,
-        event_id: eventId,
-        message: `📢 ${user.username} pinged ${viewMode === 'all' ? 'everyone' : 'the group'}: "${pingMessage}"`
-      });
+    for (const member of members) {
+      if (member.id !== user.id) {
+        socket.emit('notify-user', { user_id: member.id, event_id: eventId, message: `📢 ${user.username} to everyone: "${pingMessage}"` });
+      }
     }
     setPingMessage('');
-    setPingTarget(null);
   };
 
   const nonMembers = allUsers.filter(u => !members.some(m => m.id === u.id));
+  const friendsNotInEvent = friends.filter(f => !members.some(m => m.id === f.id));
 
-  const displayedMembers = viewMode === 'all'
-    ? members
-    : viewMode === 'ungrouped'
-      ? members.filter(m => !m.group)
-      : members.filter(m => m.group === viewMode);
+  const getRoleConfig = (role) => ROLES.find(r => r.id === role) || ROLES[0];
 
   return (
     <div>
-      {/* Group tabs */}
-      <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
-        <div className="flex gap-1 bg-white rounded-xl p-1.5 shadow-sm border border-gray-100 flex-wrap">
-          <button
-            onClick={() => setViewMode('all')}
-            className={`px-3.5 py-2 rounded-lg text-sm font-medium transition ${
-              viewMode === 'all' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25' : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            All ({members.length})
-          </button>
-          {groups.map(g => (
-            <button
-              key={g.id}
-              onClick={() => setViewMode(g.id)}
-              className={`px-3.5 py-2 rounded-lg text-sm font-medium transition ${
-                viewMode === g.id ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25' : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              {g.name} ({members.filter(m => m.group === g.id).length})
-            </button>
-          ))}
-          <button
-            onClick={() => setViewMode('ungrouped')}
-            className={`px-3.5 py-2 rounded-lg text-sm font-medium transition ${
-              viewMode === 'ungrouped' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25' : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            Ungrouped ({members.filter(m => !m.group).length})
-          </button>
-        </div>
+      {/* Actions bar */}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h3 className="font-bold text-gray-900">Team ({members.length})</h3>
         <div className="flex gap-2">
-          <button
-            onClick={() => setShowCreateGroup(true)}
-            className="bg-purple-50 text-purple-700 border border-purple-200 px-4 py-2 rounded-xl hover:bg-purple-100 text-sm font-medium transition"
-          >
+          <button onClick={() => setShowCreateGroup(true)} className="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-purple-100 transition">
             + Group
           </button>
-          <button
-            onClick={() => setShowInvite(true)}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:from-indigo-700 hover:to-purple-700 text-sm font-medium shadow-lg shadow-indigo-500/25 transition"
-          >
-            + Add People
-          </button>
+          {isAdmin && (
+            <button onClick={() => setShowInvite(true)} className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-indigo-700 transition">
+              + Add People
+            </button>
+          )}
         </div>
       </div>
 
+      {/* Members list */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+        {members.map((m, idx) => {
+          const roleConfig = getRoleConfig(m.role);
+          const memberGroup = groups.find(g => g.id === m.group);
+
+          return (
+            <div key={m.id} className={`p-3 flex items-center justify-between ${idx !== members.length - 1 ? 'border-b border-gray-50' : ''}`}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                  {m.username[0].toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{m.username} {m.id === user.id && '(you)'}</p>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${roleConfig.color}`}>
+                      {roleConfig.label}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 truncate">
+                    {m.email}
+                    {memberGroup && ` • ${memberGroup.name}`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {/* Ping button */}
+                {m.id !== user.id && (
+                  <button
+                    onClick={() => setPingTarget(pingTarget?.id === m.id ? null : m)}
+                    className="text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded-lg hover:bg-amber-100"
+                  >
+                    🔔
+                  </button>
+                )}
+
+                {/* Admin controls */}
+                {isAdmin && m.id !== user.id && m.role !== 'admin' && (
+                  <>
+                    <select
+                      value={m.role}
+                      onChange={(e) => changeRole(m.id, e.target.value)}
+                      className="text-[10px] border border-gray-200 rounded-lg px-1.5 py-1"
+                      aria-label={`Role for ${m.username}`}
+                    >
+                      <option value="member">Member</option>
+                      <option value="co-host">Co-Host</option>
+                      {currentUserRole === 'admin' && <option value="co-admin">Co-Admin</option>}
+                    </select>
+                    <button
+                      onClick={() => removeMember(m.id)}
+                      className="text-xs text-red-400 hover:text-red-600 px-1.5 py-1"
+                      aria-label={`Remove ${m.username}`}
+                    >
+                      ✕
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Ping area */}
+      {pingTarget && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+          <p className="text-sm font-medium text-amber-800 mb-2">Ping {pingTarget.username}:</p>
+          <div className="flex gap-2">
+            <input type="text" value={pingMessage} onChange={(e) => setPingMessage(e.target.value)} placeholder="Message..." className="flex-1 px-3 py-1.5 border rounded-lg text-sm" onKeyDown={(e) => e.key === 'Enter' && sendPing(pingTarget)} aria-label="Ping message" />
+            <button onClick={() => sendPing(pingTarget)} className="bg-amber-500 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-amber-600">Send</button>
+            <button onClick={() => setPingTarget(null)} className="text-gray-400 px-2">✕</button>
+          </div>
+        </div>
+      )}
+
+      {/* Ping all */}
+      <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 mb-4">
+        <p className="text-xs text-gray-500 mb-2">📢 Ping everyone</p>
+        <div className="flex gap-2">
+          <input type="text" value={!pingTarget ? pingMessage : ''} onChange={(e) => { setPingTarget(null); setPingMessage(e.target.value); }} placeholder="Broadcast a message..." className="flex-1 px-3 py-2 border rounded-lg text-sm" onKeyDown={(e) => e.key === 'Enter' && !pingTarget && pingAll()} aria-label="Broadcast message" />
+          <button onClick={pingAll} className="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-orange-600">Send</button>
+        </div>
+      </div>
+
+      {/* Groups */}
+      {groups.length > 0 && (
+        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 mb-4">
+          <p className="text-xs text-gray-500 mb-2 font-medium">Groups</p>
+          <div className="flex flex-wrap gap-2">
+            {groups.map(g => (
+              <div key={g.id} className="flex items-center gap-1 bg-purple-50 text-purple-700 px-2.5 py-1 rounded-lg text-xs font-medium">
+                {g.name} ({members.filter(m => m.group === g.id).length})
+                {isAdmin && (
+                  <button onClick={() => deleteGroup(g.id)} className="text-purple-400 hover:text-red-500 ml-1">✕</button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Create group modal */}
       {showCreateGroup && (
-        <div className="fixed inset-0 glass-overlay flex items-center justify-center z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-gray-100">
-            <h3 className="text-lg font-bold mb-4">Create Group</h3>
-            <input
-              type="text"
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-              placeholder="e.g. Marketing Team, Logistics Crew..."
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 focus:bg-white"
-              onKeyDown={(e) => e.key === 'Enter' && createGroup()}
-              autoFocus
-              aria-label="Group name"
-            />
-            <div className="flex gap-3 justify-end">
-              <button onClick={() => setShowCreateGroup(false)} className="px-5 py-2.5 text-gray-600 font-medium">Cancel</button>
-              <button onClick={createGroup} className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:from-purple-700 hover:to-indigo-700 font-medium shadow-lg shadow-purple-500/25 transition">Create</button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm">
+            <h3 className="text-lg font-bold mb-3">Create Group</h3>
+            <input type="text" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="Group name..." className="w-full px-3 py-2.5 border rounded-xl mb-3 text-sm" onKeyDown={(e) => e.key === 'Enter' && createGroup()} autoFocus aria-label="Group name" />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setShowCreateGroup(false)} className="px-4 py-2 text-gray-500 text-sm">Cancel</button>
+              <button onClick={createGroup} className="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-purple-700">Create</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Members list */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold">
-            {viewMode === 'all' ? 'All Members' : viewMode === 'ungrouped' ? 'Ungrouped Members' : groups.find(g => g.id === viewMode)?.name || 'Group'}
-            {' '}({displayedMembers.length})
-          </h3>
-          {viewMode !== 'all' && viewMode !== 'ungrouped' && (
-            <button
-              onClick={() => deleteGroup(viewMode)}
-              className="text-xs text-red-500 hover:text-red-700"
-            >
-              Delete Group
-            </button>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          {displayedMembers.map(m => (
-            <div key={m.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                  {m.username[0].toUpperCase()}
-                </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    {m.username} {m.id === user.id && '(you)'}
-                    {m.role === 'admin' && ' 👑'}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {m.group ? groups.find(g => g.id === m.group)?.name || 'Group' : 'No group'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {groups.length > 0 && (
-                  <select
-                    value={m.group || ''}
-                    onChange={(e) => assignGroup(m.id, e.target.value || null)}
-                    className="text-xs border rounded px-2 py-1"
-                    aria-label={`Group for ${m.username}`}
-                  >
-                    <option value="">No group</option>
-                    {groups.map(g => (
-                      <option key={g.id} value={g.id}>{g.name}</option>
-                    ))}
-                  </select>
-                )}
-                {m.id !== user.id && (
-                  <button
-                    onClick={() => setPingTarget(pingTarget?.id === m.id ? null : m)}
-                    className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full hover:bg-yellow-200"
-                  >
-                    🔔 Ping
-                  </button>
-                )}
-              </div>
+      {/* Add people modal */}
+      {showInvite && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Add People</h3>
+              <button onClick={() => setShowInvite(false)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
-          ))}
-          {displayedMembers.length === 0 && (
-            <p className="text-center text-gray-400 text-sm py-4">No members in this view.</p>
-          )}
-        </div>
 
-        {/* Ping individual */}
-        {pingTarget && (
-          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-sm font-medium text-yellow-800 mb-2">Ping {pingTarget.username}:</p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={pingMessage}
-                onChange={(e) => setPingMessage(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 px-3 py-1.5 border rounded-lg text-sm"
-                onKeyDown={(e) => e.key === 'Enter' && sendPing(pingTarget)}
-                aria-label="Ping message"
-              />
-              <button onClick={() => sendPing(pingTarget)} className="bg-yellow-500 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-yellow-600">Send</button>
-              <button onClick={() => { setPingTarget(null); setPingMessage(''); }} className="text-gray-500 px-2 text-sm">✕</button>
+            {/* Friends / All toggle */}
+            <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5 mb-4">
+              <button onClick={() => setInviteTab('friends')} className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${inviteTab === 'friends' ? 'bg-white shadow-sm' : 'text-gray-500'}`}>
+                Friends ({friendsNotInEvent.length})
+              </button>
+              <button onClick={() => setInviteTab('all')} className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition ${inviteTab === 'all' ? 'bg-white shadow-sm' : 'text-gray-500'}`}>
+                All Users ({nonMembers.length})
+              </button>
             </div>
-          </div>
-        )}
-      </div>
 
-      {/* Ping group/all */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
-        <h3 className="font-semibold mb-2 text-sm">
-          📢 Ping {viewMode === 'all' ? 'Everyone' : viewMode === 'ungrouped' ? 'Ungrouped' : groups.find(g => g.id === viewMode)?.name || 'Group'}
-        </h3>
-        <p className="text-xs text-gray-500 mb-2">Send a notification to {viewMode === 'all' ? 'all' : 'this group of'} team members</p>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={!pingTarget ? pingMessage : ''}
-            onChange={(e) => { setPingTarget(null); setPingMessage(e.target.value); }}
-            placeholder="e.g. Meeting at 3pm, don't forget to submit reports..."
-            className="flex-1 px-3 py-2 border rounded-lg text-sm"
-            onKeyDown={(e) => e.key === 'Enter' && !pingTarget && pingAll()}
-            aria-label="Ping all message"
-          />
-          <button onClick={pingAll} className="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-orange-600">
-            📢 Ping
-          </button>
-        </div>
-      </div>
-
-      {/* All registered users list */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-        <h3 className="font-semibold mb-3 text-sm">All Registered Users ({allUsers.length})</h3>
-        <div className="space-y-2 max-h-48 overflow-y-auto">
-          {allUsers.map(u => {
-            const isMember = members.some(m => m.id === u.id);
-            return (
-              <div key={u.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-2">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
-                    isMember ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {u.username[0].toUpperCase()}
+            <div className="space-y-2">
+              {(inviteTab === 'friends' ? friendsNotInEvent : nonMembers).map(u => (
+                <div key={u.id} className="flex items-center justify-between p-2.5 border border-gray-100 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-sm font-bold text-gray-600">
+                      {u.username[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{u.username}</p>
+                      <p className="text-[11px] text-gray-400">{u.email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm">{u.username} {u.id === user.id && '(you)'}</p>
-                    <p className="text-xs text-gray-400">{u.email}</p>
-                  </div>
-                </div>
-                {isMember ? (
-                  <span className="text-xs text-green-600 font-medium">✓ Member</span>
-                ) : (
-                  <button
-                    onClick={() => addMember(u.id)}
-                    className="text-xs bg-indigo-600 text-white px-2 py-1 rounded hover:bg-indigo-700"
-                  >
+                  <button onClick={() => addMember(u.id)} className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-indigo-700">
                     Add
                   </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Invite modal */}
-      {showInvite && (
-        <div className="fixed inset-0 glass-overlay flex items-center justify-center z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Add People to Event</h3>
-              <button onClick={() => setShowInvite(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+                </div>
+              ))}
+              {(inviteTab === 'friends' ? friendsNotInEvent : nonMembers).length === 0 && (
+                <p className="text-center text-gray-400 text-sm py-6">
+                  {inviteTab === 'friends' ? 'All your friends are already in this event' : 'All users are already members'}
+                </p>
+              )}
             </div>
-
-            {nonMembers.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">All registered users are already members.</p>
-            ) : (
-              <div className="space-y-2">
-                {nonMembers.map(u => (
-                  <div key={u.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-sm font-medium">
-                        {u.username[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{u.username}</p>
-                        <p className="text-xs text-gray-500">{u.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {groups.length > 0 && (
-                        <select
-                          className="text-xs border rounded px-2 py-1"
-                          defaultValue=""
-                          id={`invite-group-${u.id}`}
-                          aria-label={`Group for ${u.username}`}
-                        >
-                          <option value="">No group</option>
-                          {groups.map(g => (
-                            <option key={g.id} value={g.id}>{g.name}</option>
-                          ))}
-                        </select>
-                      )}
-                      <button
-                        onClick={() => {
-                          const select = document.getElementById(`invite-group-${u.id}`);
-                          addMember(u.id, select?.value || null);
-                        }}
-                        className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-indigo-700"
-                      >
-                        Add
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
+      )}
+
+      {!isAdmin && (
+        <p className="text-xs text-gray-400 text-center mt-4">Only admins and co-admins can add or remove team members</p>
       )}
     </div>
   );

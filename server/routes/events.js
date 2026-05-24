@@ -122,6 +122,12 @@ router.delete('/:id', async (req, res) => {
 });
 
 router.post('/:id/members', async (req, res) => {
+  // Only admin or co-admin can add members
+  const requester = await db.eventMembers.findOne({ event_id: req.params.id, user_id: req.user.id });
+  if (!requester || !['admin', 'co-admin'].includes(requester.role)) {
+    return res.status(403).json({ error: 'Only admins can add members' });
+  }
+
   const { user_id, group } = req.body;
   const existing = await db.eventMembers.findOne({ event_id: req.params.id, user_id });
   if (!existing) {
@@ -132,9 +138,47 @@ router.post('/:id/members', async (req, res) => {
   res.json({ success: true });
 });
 
+// Remove member from event
+router.delete('/:id/members/:userId', async (req, res) => {
+  const requester = await db.eventMembers.findOne({ event_id: req.params.id, user_id: req.user.id });
+  if (!requester || !['admin', 'co-admin'].includes(requester.role)) {
+    return res.status(403).json({ error: 'Only admins can remove members' });
+  }
+
+  // Can't remove the original admin
+  const target = await db.eventMembers.findOne({ event_id: req.params.id, user_id: req.params.userId });
+  if (target?.role === 'admin') {
+    return res.status(403).json({ error: 'Cannot remove the event creator' });
+  }
+
+  await db.eventMembers.deleteOne({ event_id: req.params.id, user_id: req.params.userId });
+  res.json({ success: true });
+});
+
+// Update member role or group
 router.put('/:id/members/:userId', async (req, res) => {
-  const { group } = req.body;
-  await db.eventMembers.updateOne({ event_id: req.params.id, user_id: req.params.userId }, { group: group || null });
+  const requester = await db.eventMembers.findOne({ event_id: req.params.id, user_id: req.user.id });
+  if (!requester || !['admin', 'co-admin'].includes(requester.role)) {
+    return res.status(403).json({ error: 'Only admins can manage roles' });
+  }
+
+  const { group, role } = req.body;
+  const updates = {};
+  if (group !== undefined) updates.group = group || null;
+  if (role !== undefined) {
+    // Only the original admin can promote to co-admin
+    if (role === 'co-admin' && requester.role !== 'admin') {
+      return res.status(403).json({ error: 'Only the event creator can promote to co-admin' });
+    }
+    // Can't change the original admin's role
+    const target = await db.eventMembers.findOne({ event_id: req.params.id, user_id: req.params.userId });
+    if (target?.role === 'admin') {
+      return res.status(403).json({ error: 'Cannot change the creator role' });
+    }
+    updates.role = role;
+  }
+
+  await db.eventMembers.updateOne({ event_id: req.params.id, user_id: req.params.userId }, updates);
   res.json({ success: true });
 });
 

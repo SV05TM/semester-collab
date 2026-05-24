@@ -139,6 +139,14 @@ const Group = mongoose.model('Group', groupSchema);
 const PushSubscription = mongoose.model('PushSubscription', pushSubscriptionSchema);
 const MeetingNote = mongoose.model('MeetingNote', meetingNoteSchema);
 
+const friendSchema = new mongoose.Schema({
+  user_id: { type: String, required: true },
+  friend_id: { type: String, required: true },
+  created_at: { type: String, default: () => new Date().toISOString() }
+});
+
+const Friend = mongoose.model('Friend', friendSchema);
+
 // Export as a db object with the same interface pattern used in routes
 const db = {
   users: User,
@@ -151,7 +159,8 @@ const db = {
   notifications: Notification,
   groups: Group,
   pushSubscriptions: PushSubscription,
-  meetingNotes: MeetingNote
+  meetingNotes: MeetingNote,
+  friends: Friend
 };
 
 export default db;
