@@ -69,6 +69,9 @@ export default function TaskBoard({ eventId, categories, members, user }) {
       deadline: form.deadline || null, priority: form.priority, status: form.status || editingTask.status
     };
 
+    // Notify if assignee changed
+    const assigneeChanged = updates.assigned_to && updates.assigned_to !== editingTask.assigned_to;
+
     setTasks(prev => prev.map(t => t.id === editingTask.id ? { ...t, ...updates } : t));
     setEditingTask(null);
     setForm({ title: '', description: '', assigned_to: '', category_id: '', deadline: '', priority: 'medium' });
@@ -77,6 +80,14 @@ export default function TaskBoard({ eventId, categories, members, user }) {
       await api.put(`/tasks/${editingTask.id}`, updates);
       loadTasks();
     } catch { loadTasks(); }
+
+    if (assigneeChanged) {
+      socket.emit('notify-user', {
+        user_id: updates.assigned_to,
+        event_id: eventId,
+        message: `You've been assigned a task: "${updates.title}"`
+      });
+    }
   };
 
   const deleteTask = async (taskId) => {
