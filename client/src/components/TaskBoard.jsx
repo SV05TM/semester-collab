@@ -57,7 +57,30 @@ export default function TaskBoard({ eventId, categories, members, user }) {
       deadline: form.deadline || null
     };
 
-    await api.post('/tasks', payload);
+    // Optimistic: add to list immediately
+    const tempId = 'temp-' + Date.now();
+    const assignedMember = members.find(m => m.id === payload.assigned_to);
+    const category = categories.find(c => c.id === payload.category_id);
+    const optimisticTask = {
+      id: tempId,
+      ...payload,
+      status: 'pending',
+      assigned_username: assignedMember?.username || null,
+      category_name: category?.name || null,
+      created_at: new Date().toISOString()
+    };
+    setTasks(prev => [optimisticTask, ...prev]);
+    setForm({ title: '', description: '', assigned_to: '', category_id: '', deadline: '' });
+    setShowForm(false);
+
+    // Then sync with server
+    try {
+      const { data } = await api.post('/tasks', payload);
+      setTasks(prev => prev.map(t => t.id === tempId ? data : t));
+    } catch (err) {
+      // Remove optimistic task on failure
+      setTasks(prev => prev.filter(t => t.id !== tempId));
+    }
 
     if (payload.assigned_to) {
       socket.emit('notify-user', {
@@ -66,9 +89,6 @@ export default function TaskBoard({ eventId, categories, members, user }) {
         message: `New task assigned to you: "${form.title}"`
       });
     }
-
-    setForm({ title: '', description: '', assigned_to: '', category_id: '', deadline: '' });
-    setShowForm(false);
   };
 
   const sendDeadlineReminders = () => {
@@ -76,11 +96,24 @@ export default function TaskBoard({ eventId, categories, members, user }) {
   };
 
   const updateStatus = async (taskId, status) => {
-    await api.put(`/tasks/${taskId}`, { status });
+    // Optimistic update
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+    try {
+      await api.put(`/tasks/${taskId}`, { status });
+    } catch (err) {
+      loadTasks(); // Revert on failure
+    }
   };
 
   const deleteTask = async (taskId) => {
-    await api.delete(`/tasks/${taskId}`);
+    // Optimistic delete
+    const prev = tasks;
+    setTasks(tasks.filter(t => t.id !== taskId));
+    try {
+      await api.delete(`/tasks/${taskId}`);
+    } catch (err) {
+      setTasks(prev); // Revert on failure
+    }
   };
 
   const filteredTasks = activeCategory === 'all'
