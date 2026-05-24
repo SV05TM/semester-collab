@@ -9,9 +9,8 @@ export default function Dashboard({ user, onLogout }) {
   const [showCreate, setShowCreate] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
   const [viewMode, setViewMode] = useState('grid');
-  const savedOrg = localStorage.getItem('saved_organization') || '';
   const [form, setForm] = useState({
-    title: '', description: '', organization: savedOrg, start_date: '', end_date: '', event_time: '', event_location: '', members: []
+    title: '', description: '', organization: user.organization || '', start_date: '', end_date: '', event_time: '', event_location: '', members: []
   });
 
   useEffect(() => {
@@ -31,9 +30,15 @@ export default function Dashboard({ user, onLogout }) {
 
   const createEvent = async (e) => {
     e.preventDefault();
-    // Save org name for future events
-    if (form.organization) {
-      localStorage.setItem('saved_organization', form.organization);
+    // Save org name to user profile
+    if (form.organization && form.organization !== user.organization) {
+      try {
+        await api.put('/auth/me', { organization: form.organization });
+        // Update local user data
+        const stored = JSON.parse(localStorage.getItem('user') || '{}');
+        stored.organization = form.organization;
+        localStorage.setItem('user', JSON.stringify(stored));
+      } catch (err) { /* non-critical */ }
     }
     await api.post('/events', form);
     setForm({ title: '', description: '', organization: form.organization, start_date: '', end_date: '', event_time: '', event_location: '', members: [] });
