@@ -116,28 +116,30 @@ export default function TaskBoard({ eventId, categories, members, user }) {
         </div>
       )}
 
-      {/* Section tabs */}
-      <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
-        <div className="flex gap-1 bg-white rounded-xl p-1.5 shadow-sm border border-gray-100 flex-wrap">
-          <button
-            onClick={() => setActiveCategory('all')}
-            className={`px-3.5 py-2 rounded-lg text-sm font-medium transition ${
-              activeCategory === 'all' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25' : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            All ({tasks.length})
-          </button>
-          {categories.map(c => (
+      {/* Section tabs - scrollable on mobile */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
+        <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-gray-100 min-w-max">
             <button
-              key={c.id}
-              onClick={() => setActiveCategory(c.id)}
-              className={`px-3.5 py-2 rounded-lg text-sm font-medium transition ${
-                activeCategory === c.id ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25' : 'text-gray-600 hover:bg-gray-50'
+              onClick={() => setActiveCategory('all')}
+              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap ${
+                activeCategory === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'
               }`}
             >
-              {c.name} ({getCategoryCount(c.id)})
+              All ({tasks.length})
             </button>
-          ))}
+            {categories.map(c => (
+              <button
+                key={c.id}
+                onClick={() => setActiveCategory(c.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap ${
+                  activeCategory === c.id ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                {c.name} ({getCategoryCount(c.id)})
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
