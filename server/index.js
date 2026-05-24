@@ -70,6 +70,22 @@ io.on('connection', (socket) => {
       content,
       created_at: message.created_at
     });
+
+    // Send push notifications to all event members (except sender)
+    try {
+      const memberships = await db.eventMembers.find({ event_id }).lean();
+      for (const m of memberships) {
+        if (m.user_id !== user_id) {
+          sendPushToUser(m.user_id, {
+            title: `💬 ${username}`,
+            body: content.length > 100 ? content.substring(0, 100) + '...' : content,
+            url: `/event/${event_id}`
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to send chat push notifications:', err.message);
+    }
   });
 
   socket.on('notify-user', async (data) => {

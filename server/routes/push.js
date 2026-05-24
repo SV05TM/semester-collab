@@ -22,8 +22,10 @@ router.post('/subscribe', async (req, res) => {
   const { subscription } = req.body;
   if (!subscription) return res.status(400).json({ error: 'Subscription object required' });
 
-  await db.pushSubscriptions.deleteMany({ user_id: req.user.id });
-  await db.pushSubscriptions.create({ user_id: req.user.id, subscription });
+  const uid = req.user.id.toString();
+  await db.pushSubscriptions.deleteMany({ user_id: uid });
+  await db.pushSubscriptions.create({ user_id: uid, subscription });
+  console.log(`Push subscription saved for user ${uid}`);
   res.json({ success: true });
 });
 
@@ -37,7 +39,11 @@ export default router;
 export async function sendPushToUser(userId, payload) {
   if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
 
-  const subs = await db.pushSubscriptions.find({ user_id: userId }).lean();
+  // Ensure we search by string ID
+  const uid = userId?.toString();
+  if (!uid) return;
+
+  const subs = await db.pushSubscriptions.find({ user_id: uid }).lean();
 
   for (const sub of subs) {
     try {
@@ -45,6 +51,10 @@ export async function sendPushToUser(userId, payload) {
     } catch (err) {
       if (err.statusCode === 410 || err.statusCode === 404) {
         await db.pushSubscriptions.findByIdAndDelete(sub._id);
+      }
+      // Log other errors for debugging
+      if (err.statusCode && err.statusCode !== 410 && err.statusCode !== 404) {
+        console.error(`Push failed for user ${uid}:`, err.statusCode, err.body);
       }
     }
   }
