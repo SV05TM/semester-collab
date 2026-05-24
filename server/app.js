@@ -11,6 +11,7 @@ import notificationRoutes from './routes/notifications.js';
 import pushRoutes from './routes/push.js';
 import meetingNotesRoutes from './routes/meetingNotes.js';
 import friendsRoutes from './routes/friends.js';
+import aiRoutes from './routes/ai.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -67,5 +68,6 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/meeting-notes', meetingNotesRoutes);
 app.use('/api/friends', friendsRoutes);
+app.use('/api/ai', aiRoutes);
 
 export default app;

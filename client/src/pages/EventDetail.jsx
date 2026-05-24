@@ -8,6 +8,7 @@ import ChatPanel from '../components/ChatPanel';
 import MembersPanel from '../components/MembersPanel';
 import MeetingNotes from '../components/MeetingNotes';
 import NotificationBell from '../components/NotificationBell';
+import AIAssistant from '../components/AIAssistant';
 
 export default function EventDetail({ user, onLogout }) {
   const { id } = useParams();
@@ -18,6 +19,7 @@ export default function EventDetail({ user, onLogout }) {
   const [exporting, setExporting] = useState(false);
   const [showEditEvent, setShowEditEvent] = useState(false);
   const [editForm, setEditForm] = useState({});
+  const [showAI, setShowAI] = useState(false);
 
   const handleExportWord = async () => {
     setExporting(true);
@@ -350,6 +352,18 @@ export default function EventDetail({ user, onLogout }) {
           />
         )}
       </div>
+
+      {/* AI Assistant floating button */}
+      <button
+        onClick={() => setShowAI(true)}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/30 flex items-center justify-center hover:scale-110 transition-transform z-30"
+        aria-label="Open AI Assistant"
+      >
+        <span className="text-xl">🤖</span>
+      </button>
+
+      {/* AI Assistant modal */}
+      {showAI && <AIAssistant eventInfo={event} onClose={() => setShowAI(false)} />}
     </div>
   );
 }
