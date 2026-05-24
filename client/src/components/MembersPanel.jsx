@@ -4,7 +4,6 @@ import socket from '../socket';
 
 const ROLES = [
   { id: 'member', label: 'Member', color: 'bg-gray-100 text-gray-600' },
-  { id: 'co-host', label: 'Co-Host', color: 'bg-blue-100 text-blue-700' },
   { id: 'co-admin', label: 'Co-Admin', color: 'bg-purple-100 text-purple-700' },
   { id: 'admin', label: 'Admin', color: 'bg-indigo-100 text-indigo-700' }
 ];
@@ -172,7 +171,6 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
                       aria-label={`Role for ${m.username}`}
                     >
                       <option value="member">Member</option>
-                      <option value="co-host">Co-Host</option>
                       {currentUserRole === 'admin' && <option value="co-admin">Co-Admin</option>}
                     </select>
                     <button

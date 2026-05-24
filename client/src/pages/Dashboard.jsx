@@ -8,9 +8,10 @@ export default function Dashboard({ user, onLogout }) {
   const [events, setEvents] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'calendar'
+  const [viewMode, setViewMode] = useState('grid');
+  const savedOrg = localStorage.getItem('saved_organization') || '';
   const [form, setForm] = useState({
-    title: '', description: '', organization: '', start_date: '', end_date: '', event_time: '', event_location: '', members: []
+    title: '', description: '', organization: savedOrg, start_date: '', end_date: '', event_time: '', event_location: '', members: []
   });
 
   useEffect(() => {
@@ -30,8 +31,12 @@ export default function Dashboard({ user, onLogout }) {
 
   const createEvent = async (e) => {
     e.preventDefault();
+    // Save org name for future events
+    if (form.organization) {
+      localStorage.setItem('saved_organization', form.organization);
+    }
     await api.post('/events', form);
-    setForm({ title: '', description: '', organization: '', start_date: '', end_date: '', event_time: '', event_location: '', members: [] });
+    setForm({ title: '', description: '', organization: form.organization, start_date: '', end_date: '', event_time: '', event_location: '', members: [] });
     setShowCreate(false);
     loadEvents();
   };
