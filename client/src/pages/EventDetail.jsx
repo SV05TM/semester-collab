@@ -106,17 +106,17 @@ export default function EventDetail({ user, onLogout }) {
   }
 
   const tabs = [
-    { id: 'tasks', label: 'Tasks', icon: '📋' },
-    { id: 'finances', label: 'Finances', icon: '💰' },
-    { id: 'planning', label: 'Planning', icon: '📝' },
-    { id: 'chat', label: 'Chat', icon: '💬' },
-    { id: 'members', label: 'Team', icon: '👥' },
+    { id: 'tasks', label: 'Tasks', icon: null },
+    { id: 'finances', label: 'Finances', icon: null },
+    { id: 'planning', label: 'Planning', icon: null },
+    { id: 'chat', label: 'Chat', icon: null },
+    { id: 'members', label: 'Team', icon: null },
   ];
 
   const categories = event.categories || [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-100">
       {/* Toast */}
       {toast && (
         <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-[100] animate-slide-in">
@@ -130,7 +130,7 @@ export default function EventDetail({ user, onLogout }) {
 
       {/* Header - compact on mobile */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <Link to="/" className="text-indigo-600 hover:text-indigo-800 flex-shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -151,16 +151,18 @@ export default function EventDetail({ user, onLogout }) {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="w-full px-4 sm:px-8 py-4">
         {/* Event info card - stacked on mobile */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 mb-4 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-2xl p-4 sm:p-5 mb-4 shadow-sm border border-slate-200">
           {event.description && <p className="text-gray-600 text-sm mb-3">{event.description}</p>}
 
           {/* Info grid - responsive */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
             {event.start_date && (
               <div className="flex items-center gap-2 bg-indigo-50 px-3 py-2.5 rounded-xl">
-                <span className="text-indigo-500 text-lg">📅</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
                 <div>
                   <p className="text-[10px] text-indigo-600 font-semibold uppercase">Date</p>
                   <p className="text-sm font-medium text-gray-800">{event.start_date}</p>
@@ -169,7 +171,9 @@ export default function EventDetail({ user, onLogout }) {
             )}
             {event.event_time && (
               <div className="flex items-center gap-2 bg-purple-50 px-3 py-2.5 rounded-xl">
-                <span className="text-purple-500 text-lg">🕐</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                 <div>
                   <p className="text-[10px] text-purple-600 font-semibold uppercase">Time</p>
                   <p className="text-sm font-medium text-gray-800">{event.event_time}</p>
@@ -178,7 +182,10 @@ export default function EventDetail({ user, onLogout }) {
             )}
             {event.event_location && (
               <div className="flex items-center gap-2 bg-emerald-50 px-3 py-2.5 rounded-xl">
-                <span className="text-emerald-500 text-lg">📍</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
                 <div>
                   <p className="text-[10px] text-emerald-600 font-semibold uppercase">Location</p>
                   <p className="text-sm font-medium text-gray-800 truncate">{event.event_location}</p>
@@ -315,15 +322,13 @@ export default function EventDetail({ user, onLogout }) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-1.5 whitespace-nowrap ${
+                className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
                 }`}
               >
-                <span>{tab.icon}</span>
-                <span className="hidden sm:inline">{tab.label}</span>
-                <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
+                {tab.label}
               </button>
             ))}
           </div>

@@ -77,27 +77,29 @@ export default function Dashboard({ user, onLogout }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-slate-100">
+      <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
+        <div className="w-full px-4 sm:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
-              <span className="text-white text-sm">🎓</span>
+            <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
             </div>
-            <h1 className="text-xl font-bold gradient-text">Semester Collab</h1>
+            <h1 className="text-lg font-bold text-slate-900">Semester Collab</h1>
           </div>
-          <div className="flex items-center gap-4">
-            <Link to="/people" className="text-gray-500 hover:text-indigo-600 transition p-2" aria-label="People">
+          <div className="flex items-center gap-3">
+            <Link to="/people" className="text-slate-500 hover:text-indigo-600 transition p-2 rounded-lg hover:bg-slate-100" aria-label="People">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </Link>
             <NotificationBell user={user} />
-            <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+            <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
+              <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
                 {user.username[0].toUpperCase()}
               </div>
-              <span className="text-gray-700 text-sm font-medium hidden sm:block">{user.username}</span>
+              <span className="text-slate-700 text-sm font-medium hidden sm:block">{user.username}</span>
               <button onClick={onLogout} className="text-sm text-gray-400 hover:text-red-500 transition ml-1">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -108,11 +110,11 @@ export default function Dashboard({ user, onLogout }) {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="w-full px-4 sm:px-8 py-6">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Your Events</h2>
-            <p className="text-gray-500 text-sm mt-1">Manage and collaborate on your semester events</p>
+            <h2 className="text-2xl font-bold text-slate-900">Your Events</h2>
+            <p className="text-slate-500 text-sm mt-1">Manage and collaborate on your semester events</p>
           </div>
           <div className="flex items-center gap-3">
             {/* View toggle */}
@@ -301,11 +303,13 @@ export default function Dashboard({ user, onLogout }) {
 
         {events.length === 0 ? (
           <div className="text-center py-20">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-2xl mb-4">
-              <span className="text-4xl">📅</span>
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-200 rounded-2xl mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">No events yet</h3>
-            <p className="text-gray-500 mb-6">Create your first event to start collaborating with your team</p>
+            <h3 className="text-lg font-semibold text-slate-700 mb-2">No events yet</h3>
+            <p className="text-slate-500 mb-6">Create your first event to start collaborating with your team</p>
             <button
               onClick={() => setShowCreate(true)}
               className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition font-medium shadow-lg shadow-indigo-500/25"
