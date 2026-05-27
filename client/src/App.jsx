@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import EventDetail from './pages/EventDetail';
 import People from './pages/People';
+import Bookmarks from './pages/Bookmarks';
 import OnboardingTutorial from './components/OnboardingTutorial';
 import socket, { connectSocket, disconnectSocket } from './socket';
 import useTheme from './useTheme';
@@ -87,6 +88,7 @@ function App() {
         <Route path="/" element={user ? <Dashboard user={user} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to="/login" />} />
         <Route path="/event/:id" element={user ? <EventDetail user={user} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to="/login" />} />
         <Route path="/people" element={user ? <People user={user} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to="/login" />} />
+        <Route path="/bookmarks" element={user ? <Bookmarks user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
       </Routes>
     </>
   );

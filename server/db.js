@@ -147,7 +147,18 @@ const friendSchema = new mongoose.Schema({
   created_at: { type: String, default: () => new Date().toISOString() }
 });
 
+const bookmarkSchema = new mongoose.Schema({
+  user_id: { type: String, required: true },
+  title: { type: String, required: true },
+  description: { type: String, default: '' },
+  type: { type: String, default: '' },
+  estimated_budget: { type: String, default: '' },
+  best_time: { type: String, default: '' },
+  created_at: { type: String, default: () => new Date().toISOString() }
+});
+
 const Friend = mongoose.model('Friend', friendSchema);
+const Bookmark = mongoose.model('Bookmark', bookmarkSchema);
 
 // Export as a db object with the same interface pattern used in routes
 const db = {
@@ -162,7 +173,8 @@ const db = {
   groups: Group,
   pushSubscriptions: PushSubscription,
   meetingNotes: MeetingNote,
-  friends: Friend
+  friends: Friend,
+  bookmarks: Bookmark
 };
 
 export default db;

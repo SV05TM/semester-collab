@@ -64,6 +64,35 @@ router.post('/chat', async (req, res) => {
   }
 });
 
+// Generate random event ideas
+router.get('/event-ideas', async (req, res) => {
+  try {
+    const model = getModel();
+    if (!model) return res.status(503).json({ error: 'AI not configured' });
+
+    const prompt = `${SYSTEM_PROMPT}\n\nGenerate 3 creative and unique event ideas for a university student organization. For each event, provide:
+- title: a catchy event name
+- description: 1-2 sentence description
+- type: one of (social, fundraiser, workshop, community-service, cultural, networking, academic)
+- estimated_budget: a rough budget range like "$50-100"
+- best_time: suggested time of semester (early, mid, late, any)
+
+Make them diverse, creative, and realistic for college students. Mix different types.
+
+Return ONLY a valid JSON array with these fields, no markdown or explanation.`;
+
+    const result = await model.generateContent(prompt);
+    let text = result.response.text().trim();
+    text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+    const ideas = JSON.parse(text);
+    res.json({ ideas });
+  } catch (err) {
+    console.error('AI event-ideas error:', err.message);
+    res.status(500).json({ error: 'Failed to generate event ideas' });
+  }
+});
+
 // Quick action endpoints for common tasks
 router.post('/suggest-tasks', async (req, res) => {
   try {
