@@ -142,12 +142,12 @@ export default function TaskBoard({ eventId, categories, members, user }) {
       {/* Category filter + actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
         <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
-          <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-gray-100 min-w-max">
-            <button onClick={() => setActiveCategory('all')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap ${activeCategory === 'all' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}`}>
+          <div className="flex gap-1 bg-white dark:bg-slate-800 rounded-xl p-1 shadow-sm border border-gray-100 dark:border-slate-700 min-w-max">
+            <button onClick={() => setActiveCategory('all')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap ${activeCategory === 'all' ? 'bg-indigo-600 text-white' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>
               All ({tasks.length})
             </button>
             {categories.map(c => (
-              <button key={c.id} onClick={() => setActiveCategory(c.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap ${activeCategory === c.id ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}`}>
+              <button key={c.id} onClick={() => setActiveCategory(c.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap ${activeCategory === c.id ? 'bg-indigo-600 text-white' : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>
                 {c.name} ({getCategoryCount(c.id)})
               </button>
             ))}
@@ -165,15 +165,15 @@ export default function TaskBoard({ eventId, categories, members, user }) {
           return (
             <div
               key={col.id}
-              className={`rounded-2xl border-t-4 ${col.color} bg-white shadow-sm border border-gray-100 min-h-[200px]`}
+              className={`rounded-2xl border-t-4 ${col.color} bg-white dark:bg-slate-800 shadow-sm border border-gray-100 dark:border-slate-700 min-h-[200px]`}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, col.id)}
             >
               {/* Column header */}
-              <div className="p-3 border-b border-gray-100 flex items-center justify-between">
+              <div className="p-3 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span>{col.icon}</span>
-                  <h3 className="text-sm font-bold text-gray-800">{col.label}</h3>
+                  <h3 className="text-sm font-bold text-gray-800 dark:text-slate-200">{col.label}</h3>
                   <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">{columnTasks.length}</span>
                 </div>
               </div>
@@ -190,7 +190,7 @@ export default function TaskBoard({ eventId, categories, members, user }) {
                       draggable
                       onDragStart={(e) => handleDragStart(e, task)}
                       onClick={() => openEdit(task)}
-                      className={`bg-white border border-gray-200 rounded-xl p-3 cursor-pointer hover:shadow-md hover:border-indigo-200 transition group ${
+                      className={`bg-white dark:bg-slate-750 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-600 rounded-xl p-3 cursor-pointer hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-500 transition group ${
                         task.status === 'completed' ? 'opacity-60' : ''
                       }`}
                     >
@@ -267,7 +267,7 @@ export default function TaskBoard({ eventId, categories, members, user }) {
       {/* Create Task Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold">New Task</h3>
               <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">✕</button>
@@ -301,7 +301,7 @@ export default function TaskBoard({ eventId, categories, members, user }) {
       {/* Edit Task Modal */}
       {editingTask && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold">Edit Task</h3>
               <button onClick={() => setEditingTask(null)} className="text-gray-400 hover:text-gray-600">✕</button>

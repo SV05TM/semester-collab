@@ -82,7 +82,7 @@ export default function MeetingNotes({ eventId, members, user }) {
           ← Back to all notes
         </button>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-start justify-between">
               <div>
@@ -189,7 +189,7 @@ export default function MeetingNotes({ eventId, members, user }) {
       {/* Create modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto">
             <h3 className="text-lg font-bold mb-4">New Meeting Note</h3>
             <form onSubmit={createNote} className="space-y-4">
               <div>
@@ -304,7 +304,7 @@ export default function MeetingNotes({ eventId, members, user }) {
 
       {/* Notes list */}
       {notes.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
+        <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100">
           <span className="text-4xl block mb-3">📝</span>
           <p className="text-gray-500 mb-1">No meeting notes yet</p>
           <p className="text-gray-400 text-sm">Create one to start documenting your planning sessions</p>
@@ -315,7 +315,7 @@ export default function MeetingNotes({ eventId, members, user }) {
             <button
               key={note.id}
               onClick={() => setActiveNote(note)}
-              className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-indigo-200 hover:shadow-md transition text-left w-full"
+              className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-gray-100 hover:border-indigo-200 hover:shadow-md transition text-left w-full"
             >
               <div className="flex items-start justify-between mb-2">
                 <h4 className="font-semibold text-gray-900 text-sm">{note.title}</h4>

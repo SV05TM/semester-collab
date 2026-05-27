@@ -125,7 +125,7 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
       </div>
 
       {/* Members list */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
         {members.map((m, idx) => {
           const roleConfig = getRoleConfig(m.role);
           const memberGroup = groups.find(g => g.id === m.group);
@@ -201,7 +201,7 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
       )}
 
       {/* Ping all */}
-      <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 mb-4">
+      <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-gray-100 mb-4">
         <p className="text-xs text-gray-500 mb-2">📢 Ping everyone</p>
         <div className="flex gap-2">
           <input type="text" value={!pingTarget ? pingMessage : ''} onChange={(e) => { setPingTarget(null); setPingMessage(e.target.value); }} placeholder="Broadcast a message..." className="flex-1 px-3 py-2 border rounded-lg text-sm" onKeyDown={(e) => e.key === 'Enter' && !pingTarget && pingAll()} aria-label="Broadcast message" />
@@ -211,7 +211,7 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
 
       {/* Groups */}
       {groups.length > 0 && (
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 mb-4">
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-gray-100 mb-4">
           <p className="text-xs text-gray-500 mb-2 font-medium">Groups</p>
           <div className="flex flex-wrap gap-2">
             {groups.map(g => (
@@ -229,7 +229,7 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
       {/* Create group modal */}
       {showCreateGroup && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 w-full max-w-sm">
             <h3 className="text-lg font-bold mb-3">Create Group</h3>
             <input type="text" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="Group name..." className="w-full px-3 py-2.5 border rounded-xl mb-3 text-sm" onKeyDown={(e) => e.key === 'Enter' && createGroup()} autoFocus aria-label="Group name" />
             <div className="flex gap-2 justify-end">
@@ -243,7 +243,7 @@ export default function MembersPanel({ eventId, members, groups, user, onMembers
       {/* Add people modal */}
       {showInvite && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-md max-h-[80vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 w-full max-w-md max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold">Add People</h3>
               <button onClick={() => setShowInvite(false)} className="text-gray-400 hover:text-gray-600">✕</button>

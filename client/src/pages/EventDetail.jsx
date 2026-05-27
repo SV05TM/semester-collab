@@ -85,7 +85,7 @@ export default function EventDetail({ user, onLogout, theme, toggleTheme }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-slate-100 dark:bg-slate-900">
         <div className="text-center">
           <div className="w-10 h-10 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
           <p className="text-gray-500 text-sm">Loading event...</p>
@@ -96,7 +96,7 @@ export default function EventDetail({ user, onLogout, theme, toggleTheme }) {
 
   if (!event) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-slate-100 dark:bg-slate-900">
         <div className="text-center">
           <span className="text-4xl mb-4 block">😕</span>
           <h2 className="text-xl font-bold text-gray-700 mb-2">Event not found</h2>

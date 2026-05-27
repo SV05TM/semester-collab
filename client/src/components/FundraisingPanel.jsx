@@ -149,7 +149,7 @@ export default function FundraisingPanel({ eventId, user }) {
       {error && <div className="bg-red-50 text-red-600 p-2 rounded-lg mb-3 text-sm">{error}</div>}
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-green-600 text-white">

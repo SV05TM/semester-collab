@@ -194,7 +194,7 @@ export default function BudgetPanel({ eventId, user, eventInfo }) {
       {error && <div className="bg-red-50 text-red-600 p-2 rounded-lg mb-3 text-sm">{error}</div>}
 
       {/* SFB-style spreadsheet table */}
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-indigo-600 text-white">
