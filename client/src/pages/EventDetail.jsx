@@ -139,8 +139,8 @@ export default function EventDetail({ user, onLogout, theme, toggleTheme }) {
               </svg>
             </Link>
             <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-gray-900 truncate">{event.title}</h1>
-              {event.organization && <p className="text-[11px] text-indigo-600 font-semibold uppercase tracking-wide truncate">{event.organization}</p>}
+              <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate">{event.title}</h1>
+              {event.organization && <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold uppercase tracking-wide truncate">{event.organization}</p>}
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -156,41 +156,41 @@ export default function EventDetail({ user, onLogout, theme, toggleTheme }) {
       <div className="w-full px-4 sm:px-8 py-4">
         {/* Event info card - stacked on mobile */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 mb-4 shadow-sm border border-slate-200 dark:border-slate-700">
-          {event.description && <p className="text-gray-600 text-sm mb-3">{event.description}</p>}
+          {event.description && <p className="text-gray-600 dark:text-slate-300 text-sm mb-3">{event.description}</p>}
 
           {/* Info grid - responsive */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
             {event.start_date && (
-              <div className="flex items-center gap-2 bg-indigo-50 px-3 py-2.5 rounded-xl">
+              <div className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-950/50 px-3 py-2.5 rounded-xl">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <div>
-                  <p className="text-[10px] text-indigo-600 font-semibold uppercase">Date</p>
-                  <p className="text-sm font-medium text-gray-800">{event.start_date}</p>
+                  <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold uppercase">Date</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-slate-200">{event.start_date}</p>
                 </div>
               </div>
             )}
             {event.event_time && (
-              <div className="flex items-center gap-2 bg-purple-50 px-3 py-2.5 rounded-xl">
+              <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-950/50 px-3 py-2.5 rounded-xl">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>
-                  <p className="text-[10px] text-purple-600 font-semibold uppercase">Time</p>
-                  <p className="text-sm font-medium text-gray-800">{event.event_time}</p>
+                  <p className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold uppercase">Time</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-slate-200">{event.event_time}</p>
                 </div>
               </div>
             )}
             {event.event_location && (
-              <div className="flex items-center gap-2 bg-emerald-50 px-3 py-2.5 rounded-xl">
+              <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/50 px-3 py-2.5 rounded-xl">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <div>
-                  <p className="text-[10px] text-emerald-600 font-semibold uppercase">Location</p>
-                  <p className="text-sm font-medium text-gray-800 truncate">{event.event_location}</p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase">Location</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{event.event_location}</p>
                 </div>
               </div>
             )}
@@ -201,31 +201,31 @@ export default function EventDetail({ user, onLogout, theme, toggleTheme }) {
             <div className="flex items-center gap-2">
               <div className="flex -space-x-2">
                 {event.members?.slice(0, 4).map(m => (
-                  <div key={m.id} className="w-7 h-7 bg-indigo-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold border-2 border-white" title={m.username}>
+                  <div key={m.id} className="w-7 h-7 bg-indigo-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold border-2 border-white dark:border-slate-800" title={m.username}>
                     {m.username[0].toUpperCase()}
                   </div>
                 ))}
                 {event.members?.length > 4 && (
-                  <div className="w-7 h-7 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 text-[10px] font-bold border-2 border-white">
+                  <div className="w-7 h-7 bg-gray-300 dark:bg-slate-600 rounded-full flex items-center justify-center text-gray-600 dark:text-slate-300 text-[10px] font-bold border-2 border-white dark:border-slate-800">
                     +{event.members.length - 4}
                   </div>
                 )}
               </div>
-              <span className="text-xs text-gray-500">{event.members?.length} member{event.members?.length !== 1 ? 's' : ''}</span>
+              <span className="text-xs text-gray-500 dark:text-slate-400">{event.members?.length} member{event.members?.length !== 1 ? 's' : ''}</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={openEditEvent}
-                className="flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-200 transition"
+                className="flex items-center gap-1 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition"
               >
                 ✏️ Edit
               </button>
               <button
                 onClick={handleExportWord}
                 disabled={exporting}
-                className="flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-200 transition disabled:opacity-50"
+                className="flex items-center gap-1 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition disabled:opacity-50"
               >
-                {exporting ? '⏳' : '📄'} Export
+                {exporting ? '...' : 'Export'}
               </button>
             </div>
           </div>
@@ -234,10 +234,10 @@ export default function EventDetail({ user, onLogout, theme, toggleTheme }) {
         {/* Edit Event Modal */}
         {showEditEvent && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">Edit Event</h3>
-                <button onClick={() => setShowEditEvent(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+                <h3 className="text-lg font-bold dark:text-white">Edit Event</h3>
+                <button onClick={() => setShowEditEvent(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300">✕</button>
               </div>
               <form onSubmit={saveEventEdit} className="space-y-3">
                 <div>
