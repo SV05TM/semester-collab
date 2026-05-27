@@ -5,6 +5,7 @@ import NotificationBell from '../components/NotificationBell';
 import CalendarView from '../components/CalendarView';
 import ThemeToggle from '../components/ThemeToggle';
 import EventIdeas from '../components/EventIdeas';
+import UserMenu from '../components/UserMenu';
 
 export default function Dashboard({ user, onLogout, theme, toggleTheme }) {
   const [events, setEvents] = useState([]);
@@ -91,29 +92,8 @@ export default function Dashboard({ user, onLogout, theme, toggleTheme }) {
             <h1 className="text-lg font-bold text-slate-900 dark:text-white">Semester Collab</h1>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle theme={theme} toggle={toggleTheme} />
-            <Link to="/bookmarks" className="text-slate-500 hover:text-indigo-600 transition p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" aria-label="Saved Ideas">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-              </svg>
-            </Link>
-            <Link to="/people" className="text-slate-500 hover:text-indigo-600 transition p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" aria-label="People">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </Link>
             <NotificationBell user={user} />
-            <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
-              <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                {user.username[0].toUpperCase()}
-              </div>
-              <span className="text-slate-700 text-sm font-medium hidden sm:block">{user.username}</span>
-              <button onClick={onLogout} className="text-sm text-gray-400 hover:text-red-500 transition ml-1">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-              </button>
-            </div>
+            <UserMenu user={user} onLogout={onLogout} theme={theme} toggleTheme={toggleTheme} />
           </div>
         </div>
       </header>

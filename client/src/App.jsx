@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import EventDetail from './pages/EventDetail';
 import People from './pages/People';
 import Bookmarks from './pages/Bookmarks';
+import Profile from './pages/Profile';
 import OnboardingTutorial from './components/OnboardingTutorial';
 import socket, { connectSocket, disconnectSocket } from './socket';
 import useTheme from './useTheme';
@@ -89,6 +90,7 @@ function App() {
         <Route path="/event/:id" element={user ? <EventDetail user={user} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to="/login" />} />
         <Route path="/people" element={user ? <People user={user} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to="/login" />} />
         <Route path="/bookmarks" element={user ? <Bookmarks user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
+        <Route path="/profile" element={user ? <Profile user={user} onLogout={handleLogout} onUserUpdate={(u) => setUser(u)} /> : <Navigate to="/login" />} />
       </Routes>
     </>
   );
