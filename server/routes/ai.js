@@ -10,7 +10,7 @@ const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
 function getModel() {
   if (!GEMINI_KEY) return null;
   const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-  return genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  return genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 }
 
 const SYSTEM_PROMPT = `You are an AI assistant for Semester Collab, a team collaboration app used by university student organizations to plan semester events. You help with:
@@ -55,11 +55,12 @@ router.post('/chat', async (req, res) => {
 
     res.json({ response });
   } catch (err) {
-    console.error('AI error:', err.message);
-    if (err.message?.includes('API_KEY')) {
+    console.error('AI error:', err.message, err.stack);
+    console.error('AI full error:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
+    if (err.message?.includes('API_KEY') || err.message?.includes('API key')) {
       return res.status(503).json({ error: 'Invalid API key. Check your GEMINI_API_KEY.' });
     }
-    res.status(500).json({ error: 'AI assistant encountered an error. Please try again.' });
+    res.status(500).json({ error: `AI error: ${err.message || 'Unknown error'}` });
   }
 });
 
