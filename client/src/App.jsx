@@ -7,8 +7,10 @@ import EventDetail from './pages/EventDetail';
 import People from './pages/People';
 import OnboardingTutorial from './components/OnboardingTutorial';
 import socket, { connectSocket, disconnectSocket } from './socket';
+import useTheme from './useTheme';
 
 function App() {
+  const { theme, toggle: toggleTheme } = useTheme();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [globalToast, setGlobalToast] = useState(null);
@@ -82,9 +84,9 @@ function App() {
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/" /> : <Login onLogin={handleLogin} />} />
         <Route path="/register" element={user ? <Navigate to="/" /> : <Register onLogin={handleLogin} />} />
-        <Route path="/" element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
-        <Route path="/event/:id" element={user ? <EventDetail user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
-        <Route path="/people" element={user ? <People user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
+        <Route path="/" element={user ? <Dashboard user={user} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to="/login" />} />
+        <Route path="/event/:id" element={user ? <EventDetail user={user} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to="/login" />} />
+        <Route path="/people" element={user ? <People user={user} onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to="/login" />} />
       </Routes>
     </>
   );

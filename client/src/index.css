@@ -9,6 +9,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.dark body,
+:root.dark body {
+  @apply bg-slate-900 text-slate-100;
+}
+
 /* Safe area for notched phones */
 #root {
   padding-top: env(safe-area-inset-top);

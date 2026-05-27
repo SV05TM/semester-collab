@@ -9,8 +9,9 @@ import MembersPanel from '../components/MembersPanel';
 import MeetingNotes from '../components/MeetingNotes';
 import NotificationBell from '../components/NotificationBell';
 import AIAssistant from '../components/AIAssistant';
+import ThemeToggle from '../components/ThemeToggle';
 
-export default function EventDetail({ user, onLogout }) {
+export default function EventDetail({ user, onLogout, theme, toggleTheme }) {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [activeTab, setActiveTab] = useState('tasks');
@@ -116,7 +117,7 @@ export default function EventDetail({ user, onLogout }) {
   const categories = event.categories || [];
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-900">
       {/* Toast */}
       {toast && (
         <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-[100] animate-slide-in">
@@ -129,7 +130,7 @@ export default function EventDetail({ user, onLogout }) {
       )}
 
       {/* Header - compact on mobile */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+      <header className="bg-white dark:bg-slate-800 shadow-sm border-b dark:border-slate-700 sticky top-0 z-40">
         <div className="w-full px-4 sm:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <Link to="/" className="text-indigo-600 hover:text-indigo-800 flex-shrink-0">
@@ -143,6 +144,7 @@ export default function EventDetail({ user, onLogout }) {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
+            <ThemeToggle theme={theme} toggle={toggleTheme} />
             <NotificationBell user={user} />
             <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
               {user.username[0].toUpperCase()}
@@ -153,7 +155,7 @@ export default function EventDetail({ user, onLogout }) {
 
       <div className="w-full px-4 sm:px-8 py-4">
         {/* Event info card - stacked on mobile */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 mb-4 shadow-sm border border-slate-200">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 mb-4 shadow-sm border border-slate-200 dark:border-slate-700">
           {event.description && <p className="text-gray-600 text-sm mb-3">{event.description}</p>}
 
           {/* Info grid - responsive */}
@@ -317,7 +319,7 @@ export default function EventDetail({ user, onLogout }) {
 
         {/* Tabs - horizontally scrollable on mobile */}
         <div className="mb-4 -mx-4 px-4 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-gray-100 min-w-max">
+          <div className="flex gap-1 bg-white dark:bg-slate-800 rounded-xl p-1 shadow-sm border border-gray-100 dark:border-slate-700 min-w-max">
             {tabs.map(tab => (
               <button
                 key={tab.id}

@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import api from '../api';
 import NotificationBell from '../components/NotificationBell';
 import CalendarView from '../components/CalendarView';
+import ThemeToggle from '../components/ThemeToggle';
 
-export default function Dashboard({ user, onLogout }) {
+export default function Dashboard({ user, onLogout, theme, toggleTheme }) {
   const [events, setEvents] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
@@ -77,8 +78,8 @@ export default function Dashboard({ user, onLogout }) {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-900">
+      <header className="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
         <div className="w-full px-4 sm:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -86,9 +87,10 @@ export default function Dashboard({ user, onLogout }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </div>
-            <h1 className="text-lg font-bold text-slate-900">Semester Collab</h1>
+            <h1 className="text-lg font-bold text-slate-900 dark:text-white">Semester Collab</h1>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggle theme={theme} toggle={toggleTheme} />
             <Link to="/people" className="text-slate-500 hover:text-indigo-600 transition p-2 rounded-lg hover:bg-slate-100" aria-label="People">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -113,8 +115,8 @@ export default function Dashboard({ user, onLogout }) {
       <main className="w-full px-4 sm:px-8 py-6">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Your Events</h2>
-            <p className="text-slate-500 text-sm mt-1">Manage and collaborate on your semester events</p>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Your Events</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage and collaborate on your semester events</p>
           </div>
           <div className="flex items-center gap-3">
             {/* View toggle */}
@@ -325,14 +327,14 @@ export default function Dashboard({ user, onLogout }) {
               <Link
                 key={event.id}
                 to={`/event/${event.id}`}
-                className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 card-hover block"
+                className="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-slate-700 card-hover block"
               >
                 {/* Color bar at top */}
                 <div className={`h-2 bg-gradient-to-r ${eventColors[idx % eventColors.length]}`}></div>
                 <div className="p-5">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition">{event.title}</h3>
+                      <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">{event.title}</h3>
                       {event.organization && (
                         <p className="text-indigo-600 text-xs font-semibold mt-0.5 uppercase tracking-wide">{event.organization}</p>
                       )}
