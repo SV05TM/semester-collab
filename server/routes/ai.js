@@ -55,18 +55,29 @@ router.post('/chat', async (req, res) => {
 
     res.json({ response });
   } catch (err) {
-    console.error('AI error:', err.message, err.stack);
-    console.error('AI full error:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
+    console.error('AI error:', err.message);
+    if (err.message?.includes('429') || err.message?.includes('quota')) {
+      return res.status(429).json({ error: 'AI rate limit reached. Try again in a minute or two.' });
+    }
     if (err.message?.includes('API_KEY') || err.message?.includes('API key')) {
       return res.status(503).json({ error: 'Invalid API key. Check your GEMINI_API_KEY.' });
     }
-    res.status(500).json({ error: `AI error: ${err.message || 'Unknown error'}` });
+    res.status(500).json({ error: 'AI is temporarily unavailable. Please try again shortly.' });
   }
 });
 
-// Generate random event ideas
+// Generate random event ideas (cached per user for 1 hour)
+const ideasCache = new Map();
+
 router.get('/event-ideas', async (req, res) => {
   try {
+    // Check cache (1 hour TTL)
+    const cacheKey = req.user.id;
+    const cached = ideasCache.get(cacheKey);
+    if (cached && Date.now() - cached.time < 60 * 60 * 1000) {
+      return res.json({ ideas: cached.ideas });
+    }
+
     const model = getModel();
     if (!model) return res.status(503).json({ error: 'AI not configured' });
 
@@ -86,9 +97,13 @@ Return ONLY a valid JSON array with these fields, no markdown or explanation.`;
     text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
     const ideas = JSON.parse(text);
+    ideasCache.set(cacheKey, { ideas, time: Date.now() });
     res.json({ ideas });
   } catch (err) {
     console.error('AI event-ideas error:', err.message);
+    if (err.message?.includes('429') || err.message?.includes('quota')) {
+      return res.status(429).json({ error: 'Rate limit reached. Ideas will refresh later.' });
+    }
     res.status(500).json({ error: 'Failed to generate event ideas' });
   }
 });

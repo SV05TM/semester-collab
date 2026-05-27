@@ -26,7 +26,8 @@ export default function EventIdeas() {
       const { data } = await api.get('/ai/event-ideas');
       setIdeas(data.ideas || []);
     } catch (err) {
-      console.error('Failed to load ideas', err);
+      // Don't show error for rate limits — just hide the section
+      console.log('Event ideas unavailable:', err.response?.data?.error || err.message);
       setIdeas([]);
     }
     setLoading(false);
