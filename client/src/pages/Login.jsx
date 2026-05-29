@@ -22,70 +22,104 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="relative z-10 w-full max-w-md px-4">
-        <div className="bg-white/95 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/20">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl mb-4 shadow-lg">
-              <span className="text-2xl">🎓</span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
-            <p className="text-gray-500 mt-1">Sign in to Semester Collab</p>
+    <div className="min-h-screen bg-stone-50 text-slate-900">
+      <div className="grid min-h-screen lg:grid-cols-[1fr_440px]">
+        <section className="hidden bg-slate-950 px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
+          <div className="flex items-center gap-3">
+            <BrandMark className="bg-teal-500 text-slate-950" />
+            <span className="text-lg font-semibold">Semester Collab</span>
           </div>
 
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-4 text-sm flex items-center gap-2 animate-fade-in">
-              <span>⚠️</span> {error}
+          <div className="max-w-xl">
+            <p className="mb-4 text-sm font-semibold uppercase text-teal-300">Built for student teams</p>
+            <h1 className="text-5xl font-bold leading-tight">Plan events, budgets, tasks, and people in one shared workspace.</h1>
+            <div className="mt-8 grid grid-cols-3 gap-3 text-sm text-slate-300">
+              <Metric value="3" label="Core planning views" />
+              <Metric value="Live" label="Team notifications" />
+              <Metric value="AI" label="Event idea support" />
             </div>
-          )}
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 focus:bg-white"
-                placeholder="you@university.edu"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 focus:bg-white"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition font-medium shadow-lg shadow-indigo-500/25 disabled:opacity-50"
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </form>
+          <p className="text-sm text-slate-400">Keep every semester project clear from kickoff to wrap-up.</p>
+        </section>
 
-          <p className="text-center mt-6 text-gray-600 text-sm">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-indigo-600 hover:text-indigo-700 font-medium">Create one</Link>
-          </p>
-        </div>
+        <main className="flex items-center justify-center px-4 py-10">
+          <div className="w-full max-w-md">
+            <div className="mb-8 flex items-center gap-3 lg:hidden">
+              <BrandMark className="bg-teal-700 text-white" />
+              <span className="text-lg font-semibold">Semester Collab</span>
+            </div>
+
+            <div className="panel p-6 sm:p-8">
+              <div className="mb-8">
+                <p className="text-sm font-semibold text-teal-700">Welcome back</p>
+                <h1 className="mt-2 text-3xl font-bold text-slate-950">Sign in to your workspace</h1>
+                <p className="mt-2 text-sm text-slate-500">Pick up planning right where your team left it.</p>
+              </div>
+
+              {error && (
+                <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 animate-fade-in">
+                  <span className="mt-0.5 font-bold">!</span> {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-700">Email</label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="field-input"
+                    placeholder="you@university.edu"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-700">Password</label>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="field-input"
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
+                <button type="submit" disabled={loading} className="primary-button w-full">
+                  {loading ? 'Signing in...' : 'Sign In'}
+                </button>
+              </form>
+
+              <p className="mt-6 text-center text-sm text-slate-600">
+                Don't have an account?{' '}
+                <Link to="/register" className="font-semibold text-teal-700 hover:text-teal-800">Create one</Link>
+              </p>
+            </div>
+          </div>
+        </main>
       </div>
+    </div>
+  );
+}
+
+function BrandMark({ className }) {
+  return (
+    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${className}`}>
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2" />
+      </svg>
+    </div>
+  );
+}
+
+function Metric({ value, label }) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+      <p className="text-2xl font-bold text-white">{value}</p>
+      <p>{label}</p>
     </div>
   );
 }

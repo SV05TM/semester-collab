@@ -28,7 +28,6 @@ function App() {
     setLoading(false);
   }, []);
 
-  // Global notification listener — shows toast on any page
   useEffect(() => {
     if (!user) return;
 
@@ -47,7 +46,6 @@ function App() {
     setUser(userData);
     connectSocket();
 
-    // Show onboarding for new users or if they haven't seen it
     if (isNewUser || !localStorage.getItem('onboarding_done')) {
       setShowOnboarding(true);
     }
@@ -65,20 +63,28 @@ function App() {
     setUser(null);
   };
 
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-stone-50 text-slate-500 dark:bg-slate-950 dark:text-slate-300">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <>
-      {/* Onboarding tutorial */}
       {showOnboarding && <OnboardingTutorial onComplete={handleOnboardingComplete} />}
 
-      {/* Global toast notification */}
       {globalToast && (
         <div className="fixed top-4 right-4 z-[200] animate-slide-in">
-          <div className="bg-indigo-600 text-white px-4 py-3 rounded-xl shadow-lg max-w-sm flex items-center gap-3">
-            <span className="text-lg">🔔</span>
-            <p className="text-sm flex-1">{globalToast}</p>
-            <button onClick={() => setGlobalToast(null)} className="text-white/70 hover:text-white">✕</button>
+          <div className="flex max-w-sm items-center gap-3 rounded-lg bg-teal-700 px-4 py-3 text-white shadow-lg">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5" />
+              </svg>
+            </span>
+            <p className="flex-1 text-sm">{globalToast}</p>
+            <button onClick={() => setGlobalToast(null)} className="text-white/70 hover:text-white" aria-label="Dismiss notification">x</button>
           </div>
         </div>
       )}
